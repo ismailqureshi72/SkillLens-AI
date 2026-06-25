@@ -1,0 +1,175 @@
+export interface RoleEntry {
+  name: string;
+  popularity: number; // Higher numbers indicate more popular/trending roles (0-100 scale)
+  category: string;
+}
+
+export const ROLE_DATASET: RoleEntry[] = [
+  // Web & Software Engineering
+  { name: "Software Engineer", popularity: 99, category: "Web & Software Engineering" },
+  { name: "Software Developer", popularity: 98, category: "Web & Software Engineering" },
+  { name: "Software Tester", popularity: 84, category: "Web & Software Engineering" },
+  { name: "Frontend Developer", popularity: 95, category: "Web & Software Engineering" },
+  { name: "Backend Developer", popularity: 94, category: "Web & Software Engineering" },
+  { name: "Full Stack Developer", popularity: 96, category: "Web & Software Engineering" },
+  { name: "Mobile App Developer", popularity: 88, category: "Web & Software Engineering" },
+  { name: "iOS Developer", popularity: 82, category: "Web & Software Engineering" },
+  { name: "Android Developer", popularity: 81, category: "Web & Software Engineering" },
+  { name: "React Native Developer", popularity: 83, category: "Web & Software Engineering" },
+  { name: "Flutter Developer", popularity: 80, category: "Web & Software Engineering" },
+  { name: "Webflow Developer", popularity: 68, category: "Web & Software Engineering" },
+  { name: "WordPress Developer", popularity: 72, category: "Web & Software Engineering" },
+  { name: "Shopify Developer", popularity: 70, category: "Web & Software Engineering" },
+  { name: "Embedded Systems Engineer", popularity: 74, category: "Web & Software Engineering" },
+  { name: "Solutions Architect", popularity: 87, category: "Web & Software Engineering" },
+  { name: "Systems Engineer", popularity: 77, category: "Web & Software Engineering" },
+  { name: "Firmware Engineer", popularity: 69, category: "Web & Software Engineering" },
+  { name: "QA Engineer", popularity: 85, category: "Web & Software Engineering" },
+  { name: "Test Automation Engineer", popularity: 82, category: "Web & Software Engineering" },
+  { name: "Blockchain Developer", popularity: 76, category: "Web & Software Engineering" },
+  { name: "Smart Contract Engineer", popularity: 71, category: "Web & Software Engineering" },
+  { name: "Solidity Developer", popularity: 68, category: "Web & Software Engineering" },
+  { name: "Salesforce Developer", popularity: 75, category: "Web & Software Engineering" },
+  { name: "Game Developer", popularity: 79, category: "Web & Software Engineering" },
+  { name: "Unity Developer", popularity: 73, category: "Web & Software Engineering" },
+  { name: "Unreal Engine Developer", popularity: 71, category: "Web & Software Engineering" },
+  { name: "Hardware Engineer", popularity: 65, category: "Web & Software Engineering" },
+  { name: "FPGA Engineer", popularity: 60, category: "Web & Software Engineering" },
+  { name: "ASIC Design Engineer", popularity: 58, category: "Web & Software Engineering" },
+  { name: "Systems Analyst", popularity: 68, category: "Web & Software Engineering" },
+  { name: "Application Security Engineer", popularity: 79, category: "Web & Software Engineering" },
+
+  // Data & AI
+  { name: "Data Scientist", popularity: 93, category: "Data & AI" },
+  { name: "Machine Learning Engineer", popularity: 91, category: "Data & AI" },
+  { name: "AI Engineer", popularity: 94, category: "Data & AI" },
+  { name: "Deep Learning Engineer", popularity: 84, category: "Data & AI" },
+  { name: "Computer Vision Engineer", popularity: 82, category: "Data & AI" },
+  { name: "NLP Engineer", popularity: 80, category: "Data & AI" },
+  { name: "Data Analyst", popularity: 89, category: "Data & AI" },
+  { name: "Data Engineer", popularity: 90, category: "Data & AI" },
+  { name: "BI Developer", popularity: 78, category: "Data & AI" },
+  { name: "BI Analyst", popularity: 74, category: "Data & AI" },
+  { name: "Analytics Engineer", popularity: 83, category: "Data & AI" },
+  { name: "Data Architect", popularity: 82, category: "Data & AI" },
+  { name: "Database Administrator", popularity: 75, category: "Data & AI" },
+  { name: "Robotics Engineer", popularity: 71, category: "Data & AI" },
+  { name: "MLOps Engineer", popularity: 81, category: "Data & AI" },
+  { name: "AI Research Scientist", popularity: 85, category: "Data & AI" },
+
+  // Infrastructure & DevOps
+  { name: "DevOps Engineer", popularity: 92, category: "Infrastructure & DevOps" },
+  { name: "Cloud Engineer", popularity: 90, category: "Infrastructure & DevOps" },
+  { name: "Cloud Architect", popularity: 88, category: "Infrastructure & DevOps" },
+  { name: "Site Reliability Engineer (SRE)", popularity: 86, category: "Infrastructure & DevOps" },
+  { name: "System Administrator", popularity: 76, category: "Infrastructure & DevOps" },
+  { name: "Network Engineer", popularity: 74, category: "Infrastructure & DevOps" },
+  { name: "Infrastructure Engineer", popularity: 82, category: "Infrastructure & DevOps" },
+  { name: "Platform Engineer", popularity: 84, category: "Infrastructure & DevOps" },
+  { name: "Release Engineer", popularity: 65, category: "Infrastructure & DevOps" },
+  { name: "Linux System Administrator", popularity: 70, category: "Infrastructure & DevOps" },
+
+  // Product & Management
+  { name: "Product Manager", popularity: 92, category: "Product & Management" },
+  { name: "Technical Product Manager", popularity: 85, category: "Product & Management" },
+  { name: "Project Manager", popularity: 88, category: "Product & Management" },
+  { name: "Program Manager", popularity: 81, category: "Product & Management" },
+  { name: "Scrum Master", popularity: 79, category: "Product & Management" },
+  { name: "Agile Coach", popularity: 70, category: "Product & Management" },
+  { name: "Business Analyst", popularity: 84, category: "Product & Management" },
+  { name: "Product Owner", popularity: 83, category: "Product & Management" },
+  { name: "Engineering Manager", popularity: 86, category: "Product & Management" },
+  { name: "Director of Engineering", popularity: 78, category: "Product & Management" },
+  { name: "VP of Engineering", popularity: 74, category: "Product & Management" },
+  { name: "Chief Technology Officer (CTO)", popularity: 85, category: "Product & Management" },
+  { name: "Chief Product Officer (CPO)", popularity: 78, category: "Product & Management" },
+
+  // Design & Creative
+  { name: "UI/UX Designer", popularity: 94, category: "Design & Creative" },
+  { name: "Product Designer", popularity: 91, category: "Design & Creative" },
+  { name: "UX Researcher", popularity: 82, category: "Design & Creative" },
+  { name: "UX Writer", popularity: 70, category: "Design & Creative" },
+  { name: "Visual Designer", popularity: 78, category: "Design & Creative" },
+  { name: "Graphic Designer", popularity: 85, category: "Design & Creative" },
+  { name: "Interaction Designer", popularity: 76, category: "Design & Creative" },
+  { name: "Motion Designer", popularity: 71, category: "Design & Creative" },
+  { name: "Brand Designer", popularity: 73, category: "Design & Creative" },
+  { name: "Web Designer", popularity: 74, category: "Design & Creative" },
+  { name: "Creative Director", popularity: 78, category: "Design & Creative" },
+  { name: "Art Director", popularity: 75, category: "Design & Creative" },
+
+  // Security
+  { name: "Cybersecurity Analyst", popularity: 86, category: "Security" },
+  { name: "Security Engineer", popularity: 84, category: "Security" },
+  { name: "Security Architect", popularity: 80, category: "Security" },
+  { name: "Penetration Tester", popularity: 79, category: "Security" },
+  { name: "SOC Analyst", popularity: 75, category: "Security" },
+  { name: "Incident Responder", popularity: 72, category: "Security" },
+  { name: "Information Security Manager", popularity: 78, category: "Security" },
+  { name: "Cryptographer", popularity: 61, category: "Security" },
+
+  // Marketing & Growth
+  { name: "SEO Specialist", popularity: 76, category: "Marketing & Growth" },
+  { name: "Digital Marketer", popularity: 81, category: "Marketing & Growth" },
+  { name: "Growth Hacker", popularity: 73, category: "Marketing & Growth" },
+  { name: "Social Media Manager", popularity: 79, category: "Marketing & Growth" },
+  { name: "Content Strategist", popularity: 75, category: "Marketing & Growth" },
+  { name: "Community Manager", popularity: 71, category: "Marketing & Growth" },
+  { name: "Technical Writer", popularity: 74, category: "Marketing & Growth" },
+
+  // Operations & Support
+  { name: "Customer Success Manager", popularity: 80, category: "Operations & Support" },
+  { name: "Technical Support Engineer", popularity: 79, category: "Operations & Support" },
+  { name: "Solutions Engineer", popularity: 82, category: "Operations & Support" },
+  { name: "Sales Engineer", popularity: 78, category: "Operations & Support" },
+  { name: "IT Support Specialist", popularity: 83, category: "Operations & Support" },
+  { name: "SAP Consultant", popularity: 75, category: "Operations & Support" },
+  { name: "Salesforce Administrator", popularity: 73, category: "Operations & Support" },
+
+  // Finance & Accounting
+  { name: "Financial Analyst", popularity: 90, category: "Finance & Accounting" },
+  { name: "Accountant", popularity: 88, category: "Finance & Accounting" },
+  { name: "Investment Banker", popularity: 82, category: "Finance & Accounting" },
+  { name: "Auditor", popularity: 80, category: "Finance & Accounting" },
+  { name: "Tax Consultant", popularity: 78, category: "Finance & Accounting" },
+  { name: "Finance Manager", popularity: 84, category: "Finance & Accounting" },
+  { name: "Portfolio Manager", popularity: 76, category: "Finance & Accounting" },
+  { name: "Risk Analyst", popularity: 79, category: "Finance & Accounting" },
+  { name: "Bookkeeper", popularity: 70, category: "Finance & Accounting" },
+
+  // Healthcare & Medical
+  { name: "Doctor", popularity: 88, category: "Healthcare & Medical" },
+  { name: "Registered Nurse", popularity: 92, category: "Healthcare & Medical" },
+  { name: "Pharmacist", popularity: 84, category: "Healthcare & Medical" },
+  { name: "Dentist", popularity: 80, category: "Healthcare & Medical" },
+  { name: "Physical Therapist", popularity: 78, category: "Healthcare & Medical" },
+  { name: "Clinical Psychologist", popularity: 81, category: "Healthcare & Medical" },
+  { name: "Lab Technician", popularity: 75, category: "Healthcare & Medical" },
+  { name: "Medical Assistant", popularity: 77, category: "Healthcare & Medical" },
+  { name: "Surgeon", popularity: 83, category: "Healthcare & Medical" },
+
+  // Education & Training
+  { name: "High School Teacher", popularity: 86, category: "Education & Training" },
+  { name: "Professor", popularity: 82, category: "Education & Training" },
+  { name: "School Counselor", popularity: 75, category: "Education & Training" },
+  { name: "Tutor", popularity: 70, category: "Education & Training" },
+  { name: "Instructional Designer", popularity: 78, category: "Education & Training" },
+  { name: "Academic Advisor", popularity: 72, category: "Education & Training" },
+  { name: "Special Education Teacher", popularity: 77, category: "Education & Training" },
+
+  // Traditional Engineering
+  { name: "Civil Engineer", popularity: 85, category: "Traditional Engineering" },
+  { name: "Mechanical Engineer", popularity: 87, category: "Traditional Engineering" },
+  { name: "Electrical Engineer", popularity: 86, category: "Traditional Engineering" },
+  { name: "Chemical Engineer", popularity: 80, category: "Traditional Engineering" },
+  { name: "Industrial Engineer", popularity: 79, category: "Traditional Engineering" },
+  { name: "Aerospace Engineer", popularity: 78, category: "Traditional Engineering" },
+  { name: "Environmental Engineer", popularity: 75, category: "Traditional Engineering" },
+
+  // Legal
+  { name: "Lawyer", popularity: 85, category: "Legal" },
+  { name: "Paralegal", popularity: 78, category: "Legal" },
+  { name: "Legal Assistant", popularity: 74, category: "Legal" },
+  { name: "Compliance Officer", popularity: 82, category: "Legal" },
+  { name: "Contract Administrator", popularity: 70, category: "Legal" }
+];
