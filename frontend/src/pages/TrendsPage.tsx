@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useApp } from '../context/AppContext';
+import CompanySection from '../components/CompanySection';
 
 export default function TrendsPage() {
   const { trends, fetchTrends, theme } = useApp();
@@ -130,7 +131,7 @@ export default function TrendsPage() {
                 Salary Benchmarking
               </h3>
               <p className="font-body-sm text-body-sm text-on-surface-variant mt-sm">
-                Expected national baseline ranges derived from structured index indexes.
+                Expected monthly baseline ranges in the Pakistan technology sector.
               </p>
             </div>
 
@@ -155,7 +156,7 @@ export default function TrendsPage() {
                     Min Baseline
                   </span>
                   <span className="font-headline-sm text-[16px] text-on-surface font-extrabold">
-                    ${salaryMin.toLocaleString()}
+                    PKR {salaryMin.toLocaleString()}
                   </span>
                 </div>
                 <div>
@@ -163,7 +164,7 @@ export default function TrendsPage() {
                     Median Expectation
                   </span>
                   <span className="font-headline-sm text-headline-sm text-primary font-extrabold">
-                    ${salaryMedian.toLocaleString()}
+                    PKR {salaryMedian.toLocaleString()}
                   </span>
                 </div>
                 <div>
@@ -171,7 +172,7 @@ export default function TrendsPage() {
                     Max Potential
                   </span>
                   <span className="font-headline-sm text-[16px] text-on-surface font-extrabold">
-                    ${salaryMax.toLocaleString()}
+                    PKR {salaryMax.toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -210,6 +211,9 @@ export default function TrendsPage() {
             </div>
           </div>
         </div>
+
+        {/* Localized Company Intelligence Section */}
+        <CompanySection />
       </section>
     </main>
   );

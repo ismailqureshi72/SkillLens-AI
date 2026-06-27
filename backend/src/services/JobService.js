@@ -247,6 +247,9 @@ export class JobService {
             if (filters.role && filters.role !== 'All' && filters.role !== '') {
                 jobs = jobs.filter(j => getRoleCategory(j.title) === filters.role);
             }
+            if (filters.remote === true || filters.remote === 'true') {
+                jobs = jobs.filter(j => j.location.toLowerCase().includes('remote'));
+            }
             if (filters.match_level && filters.match_level !== 'All' && filters.match_level !== '') {
                 const level = filters.match_level;
                 if (level === '75' || level === 'Strong') {

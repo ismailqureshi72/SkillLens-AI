@@ -102,10 +102,10 @@ export class AnalysisController {
         { name: 'Tailwind CSS v4', growth: '+45%', level: 'High' },
       ];
 
-      let salaryMin = 85000;
-      let salaryMax = 160000;
-      let salaryMedian = 122000;
-      let hiringCompanies = ['Stitch Inc', 'Vercel', 'Linear', 'Supabase', 'GitHub'];
+      let salaryMin = 100000;
+      let salaryMax = 350000;
+      let salaryMedian = 220000;
+      let hiringCompanies = ['Systems Limited', 'Arbisoft', 'NETSOL Technologies', '10Pearls', 'VentureDive'];
 
       // Customize output based on semantic keyword mapping
       if (
@@ -133,9 +133,9 @@ export class AnalysisController {
           { name: 'AI Diagnostics Assist', growth: '+68%', level: 'Critical' },
           { name: 'Point-of-Care Testing (POCT)', growth: '+25%', level: 'Medium' },
         ];
-        salaryMin = 65000;
-        salaryMax = 190000;
-        salaryMedian = 110000;
+        salaryMin = 80000;
+        salaryMax = 350000;
+        salaryMedian = 180000;
         hiringCompanies = ['Shaukat Khanum Hospital', 'Aga Khan University Hospital', 'Indus Hospital', 'National Health Services'];
       } else if (
         roleLower.includes('financial') ||
@@ -162,9 +162,9 @@ export class AnalysisController {
           { name: 'PowerBI & Tableau', growth: '+58%', level: 'Critical' },
           { name: 'Automated Billing Systems', growth: '+45%', level: 'High' },
         ];
-        salaryMin = 50000;
-        salaryMax = 160000;
-        salaryMedian = 95000;
+        salaryMin = 70000;
+        salaryMax = 300000;
+        salaryMedian = 140000;
         hiringCompanies = ['Habib Bank Limited (HBL)', 'EY Pakistan', 'KPMG Taseer Hadi', 'Unilever Pakistan', 'Fatima Group'];
       } else if (
         roleLower.includes('teach') ||
@@ -187,9 +187,9 @@ export class AnalysisController {
           { name: 'Interactive SMART Boards', growth: '+30%', level: 'Medium' },
           { name: 'Gamified Learning (Kahoot/Quizizz)', growth: '+60%', level: 'Critical' },
         ];
-        salaryMin = 25000;
-        salaryMax = 75000;
-        salaryMedian = 48000;
+        salaryMin = 40000;
+        salaryMax = 150000;
+        salaryMedian = 80000;
         hiringCompanies = ['The City School', 'Beaconhouse School System', 'Lahore Grammar School', 'Roots Millennium Schools'];
       } else if (
         roleLower.includes('mechanical') ||
@@ -212,9 +212,9 @@ export class AnalysisController {
           { name: 'Primavera P6 Scheduling', growth: '+35%', level: 'High' },
           { name: 'PLC / SCADA Integration', growth: '+50%', level: 'Critical' },
         ];
-        salaryMin = 45000;
-        salaryMax = 150000;
-        salaryMedian = 85000;
+        salaryMin = 60000;
+        salaryMax = 250000;
+        salaryMedian = 120000;
         hiringCompanies = ['Engro Corporation', 'Indus Motor Company', 'Fatima Group', 'Fauji Fertilizer Company', 'DESCON'];
       } else if (
         roleLower.includes('lawyer') ||
@@ -235,9 +235,9 @@ export class AnalysisController {
           { name: 'AI Legal Reviewer Tools', growth: '+75%', level: 'Critical' },
           { name: 'Digital Evidence Vaults', growth: '+35%', level: 'High' },
         ];
-        salaryMin = 40000;
-        salaryMax = 140000;
-        salaryMedian = 80000;
+        salaryMin = 50000;
+        salaryMax = 220000;
+        salaryMedian = 110000;
         hiringCompanies = ['RIAA Barker Gillette', 'ABS & Co', 'Liaquat Merchant Associates', 'Unilever Legal'];
       } else if (
         roleLower.includes('supply') ||
@@ -266,9 +266,9 @@ export class AnalysisController {
           { name: 'Zendesk Suite Helpdesk', growth: '+30%', level: 'Medium' },
           { name: 'Workday HR / HCM', growth: '+55%', level: 'Critical' },
         ];
-        salaryMin = 35000;
-        salaryMax = 110000;
-        salaryMedian = 70000;
+        salaryMin = 55000;
+        salaryMax = 200000;
+        salaryMedian = 100000;
         hiringCompanies = ['Indus Motor Company', 'Unilever Pakistan', 'Jazz (Mobilink)', 'Fatima Group', 'DHL Pakistan'];
       } else if (roleLower.includes('design') || roleLower.includes('ux') || roleLower.includes('ui') || roleLower.includes('graphic') || roleLower.includes('creative') || roleLower.includes('art')) {
         marketDemand = [
@@ -283,10 +283,10 @@ export class AnalysisController {
           { name: 'Tailwind CSS v4', growth: '+48%', level: 'High' },
           { name: 'Web accessibility WCAG', growth: '+60%', level: 'Critical' },
         ];
-        salaryMin = 95000;
-        salaryMax = 175000;
-        salaryMedian = 135000;
-        hiringCompanies = ['Figma', 'Stitch Inc', 'Apple', 'Airbnb', 'Vercel'];
+        salaryMin = 80000;
+        salaryMax = 280000;
+        salaryMedian = 160000;
+        hiringCompanies = ['VentureDive', 'SadaPay', 'Systems Limited', '10Pearls', 'Arbisoft'];
       } else if (roleLower.includes('data') || roleLower.includes('science') || roleLower.includes('ml') || roleLower.includes('ai')) {
         marketDemand = [
           { name: 'Machine Learning', value: 94 },
@@ -300,10 +300,10 @@ export class AnalysisController {
           { name: 'Vector Databases (Pinecone)', growth: '+85%', level: 'Critical' },
           { name: 'LangChain / LLM fine-tuning', growth: '+120%', level: 'Critical' },
         ];
-        salaryMin = 115000;
-        salaryMax = 220000;
-        salaryMedian = 165000;
-        hiringCompanies = ['OpenAI', 'Google DeepMind', 'Meta AI', 'Amazon Web Services', 'Anthropic'];
+        salaryMin = 120000;
+        salaryMax = 450000;
+        salaryMedian = 260000;
+        hiringCompanies = ['Devsinc', 'Arbisoft', 'Systems Limited', '10Pearls', 'VentureDive'];
       } else if (roleLower.includes('devops') || roleLower.includes('cloud') || roleLower.includes('sre')) {
         marketDemand = [
           { name: 'Kubernetes / K8s', value: 91 },
@@ -318,9 +318,9 @@ export class AnalysisController {
           { name: 'Kubernetes Operators', growth: '+75%', level: 'Critical' },
         ];
         salaryMin = 110000;
-        salaryMax = 195000;
-        salaryMedian = 150000;
-        hiringCompanies = ['Microsoft Azure', 'Red Hat', 'Datadog', 'HashiCorp', 'Cloudflare'];
+        salaryMax = 400000;
+        salaryMedian = 240000;
+        hiringCompanies = ['Contour Software', 'NETSOL Technologies', 'Systems Limited', '10Pearls', 'Devsinc'];
       } else if (roleLower.includes('engineer') || roleLower.includes('developer') || roleLower.includes('full stack') || roleLower.includes('frontend') || roleLower.includes('backend')) {
         marketDemand = [
           { name: 'TypeScript / JS', value: 90 },
@@ -334,10 +334,10 @@ export class AnalysisController {
           { name: 'AWS Lambda / Serverless', growth: '+28%', level: 'Medium' },
           { name: 'Tailwind CSS v4', growth: '+45%', level: 'High' },
         ];
-        salaryMin = 100000;
-        salaryMax = 185000;
-        salaryMedian = 142000;
-        hiringCompanies = ['Vercel', 'Netlify', 'GitHub', 'Supabase', 'Stripe'];
+        salaryMin = 90000;
+        salaryMax = 350000;
+        salaryMedian = 200000;
+        hiringCompanies = ['Systems Limited', 'Arbisoft', 'NETSOL Technologies', '10Pearls', 'VentureDive'];
       }
 
       return res.json({
