@@ -245,7 +245,7 @@ export default function JobsPage() {
         <div className="p-md bg-primary/5 border border-primary/20 rounded-xl flex items-start gap-md shadow-sm">
           <span className="material-symbols-outlined text-primary text-[22px] shrink-0">info</span>
           <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-            <strong>Application Notice:</strong> This platform helps you find jobs and analyzes compatibility. All applications are completed directly on the company's official website. Anti-gravity ensures no simulated internal submissions occur.
+            <strong>Application Notice:</strong> This platform helps you find jobs and analyzes compatibility. All applications are completed directly on the company's official website.
           </p>
         </div>
 

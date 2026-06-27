@@ -31,12 +31,6 @@ export default function Footer() {
             Terms of Service
           </Link>
           <Link
-            to="/api-docs"
-            className="hover:text-primary transition-colors hover:underline underline-offset-4"
-          >
-            API
-          </Link>
-          <Link
             to="/support"
             className="hover:text-primary transition-colors hover:underline underline-offset-4"
           >
