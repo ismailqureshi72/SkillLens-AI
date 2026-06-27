@@ -56,7 +56,7 @@ interface AppContextType {
   trends: TrendsData | null;
   fetchTrends: (role: string) => Promise<void>;
   matchedJobs: JobMatch[];
-  fetchMatchedJobs: (skills: string[], role: string) => Promise<void>;
+  fetchMatchedJobs: (skills: string[], role: string, filters?: any) => Promise<void>;
   bookmarks: string[];
   toggleBookmark: (jobId: string) => void;
   jobsLoading: boolean;
@@ -160,13 +160,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const fetchMatchedJobs = async (skills: string[], role: string) => {
+  const fetchMatchedJobs = async (skills: string[], role: string, filters?: any) => {
     setJobsLoading(true);
     setJobsError(null);
     try {
       const response = await axios.post(`${API_BASE_URL}/api/jobs/match`, {
         user_skills: skills,
         target_role: role,
+        filters: filters || {}
       });
       setMatchedJobs(response.data);
     } catch (err: any) {

@@ -18,18 +18,30 @@ export default function Footer() {
           >
             Home
           </Link>
-          <a href="#" className="hover:text-primary transition-colors hover:underline underline-offset-4">
+          <Link
+            to="/privacy-policy"
+            className="hover:text-primary transition-colors hover:underline underline-offset-4"
+          >
             Privacy Policy
-          </a>
-          <a href="#" className="hover:text-primary transition-colors hover:underline underline-offset-4">
+          </Link>
+          <Link
+            to="/terms-of-service"
+            className="hover:text-primary transition-colors hover:underline underline-offset-4"
+          >
             Terms of Service
-          </a>
-          <a href="#" className="hover:text-primary transition-colors hover:underline underline-offset-4">
+          </Link>
+          <Link
+            to="/api-docs"
+            className="hover:text-primary transition-colors hover:underline underline-offset-4"
+          >
             API
-          </a>
-          <a href="#" className="hover:text-primary transition-colors hover:underline underline-offset-4">
+          </Link>
+          <Link
+            to="/support"
+            className="hover:text-primary transition-colors hover:underline underline-offset-4"
+          >
             Support
-          </a>
+          </Link>
         </div>
       </div>
     </footer>

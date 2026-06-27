@@ -9,10 +9,11 @@ export class JobController {
         try {
             const userSkills = req.body.user_skills || req.body.userSkills;
             const targetRole = req.body.target_role || req.body.targetRole;
+            const filters = req.body.filters;
             if (!userSkills || !Array.isArray(userSkills)) {
                 return res.status(400).json({ error: 'user_skills must be a valid array of strings.' });
             }
-            const matchedJobs = jobService.matchJobs(userSkills, targetRole);
+            const matchedJobs = jobService.matchJobs(userSkills, targetRole, filters);
             // Return both snake_case and camelCase to satisfy specifications and keep frontend typing clean
             const mappedJobs = matchedJobs.map(job => ({
                 id: job.id,

@@ -25,7 +25,8 @@ export declare class JobService {
      * Matches user skills against the job database.
      * @param userSkills List of skills parsed from the user's resume.
      * @param targetRole Target role parameters to filter initial listings (optional).
+     * @param filters Optional backend filters (location, match_level, role).
      */
-    matchJobs(userSkills: string[], targetRole?: string): MatchedJob[];
+    matchJobs(userSkills: string[], targetRole?: string, filters?: any): MatchedJob[];
 }
 //# sourceMappingURL=JobService.d.ts.map

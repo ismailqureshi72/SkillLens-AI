@@ -172,16 +172,63 @@ const MOCK_JOBS: Job[] = [
   }
 ];
 
+const getRoleCategory = (title: string): string => {
+  const t = title.toLowerCase();
+  
+  if (t.includes('nurse') || t.includes('doctor') || t.includes('pharmacist') || t.includes('clinical') || t.includes('medical') || t.includes('surgeon')) {
+    return 'Healthcare & Medical';
+  }
+  if (t.includes('finance') || t.includes('analyst') || t.includes('accountant') || t.includes('auditor') || t.includes('tax') || t.includes('banker') || t.includes('brand manager')) {
+    return 'Finance & Business';
+  }
+  if (t.includes('teacher') || t.includes('professor') || t.includes('tutor') || t.includes('educat') || t.includes('academic')) {
+    return 'Education & Training';
+  }
+  if (t.includes('mechanical') || t.includes('civil') || t.includes('electrical') || t.includes('chemical') || t.includes('industrial') || t.includes('aerospace') || t.includes('environmental')) {
+    return 'Traditional Engineering';
+  }
+  if (t.includes('lawyer') || t.includes('paralegal') || t.includes('legal') || t.includes('compliance') || t.includes('contract')) {
+    return 'Legal';
+  }
+  if (t.includes('supply') || t.includes('logistics') || t.includes('inventory') || t.includes('support') || t.includes('operations') || t.includes('customer') || t.includes('hr ') || t.includes('human resources')) {
+    return 'Operations & Support';
+  }
+  if (t.includes('designer') || t.includes('design') || t.includes('graphic') || t.includes('creative') || t.includes('art') || t.includes('ui/') || t.includes('ux') || t.includes(' ui') || t.includes('ux ')) {
+    return 'Design & Creative';
+  }
+  if (
+    t.includes('developer') || 
+    t.includes('engineer') || 
+    t.includes('architect') || 
+    t.includes('programmer') || 
+    t.includes('sre') || 
+    t.includes('devops') || 
+    t.includes('cloud') || 
+    t.includes('data') || 
+    t.includes('scientist') || 
+    t.includes('machine learning') || 
+    t.includes('ai ') || 
+    t.includes('qa') || 
+    t.includes('blockchain') || 
+    t.includes('security')
+  ) {
+    return 'Technology & Software';
+  }
+  
+  return 'Other';
+};
+
 export class JobService {
   /**
    * Matches user skills against the job database.
    * @param userSkills List of skills parsed from the user's resume.
    * @param targetRole Target role parameters to filter initial listings (optional).
+   * @param filters Optional backend filters (location, match_level, role).
    */
-  matchJobs(userSkills: string[], targetRole?: string): MatchedJob[] {
+  matchJobs(userSkills: string[], targetRole?: string, filters?: any): MatchedJob[] {
     const normalizedUserSkills = userSkills.map(s => s.toLowerCase().trim());
     
-    return MOCK_JOBS.map(job => {
+    let jobs = MOCK_JOBS.map(job => {
       const matchedSkills: string[] = [];
       const missingSkills: string[] = [];
 
@@ -223,6 +270,41 @@ export class JobService {
         matchPercentage,
         matchLevel
       };
-    }).sort((a, b) => b.matchPercentage - a.matchPercentage);
+    });
+
+    // Apply Backend Filters if provided
+    if (filters) {
+      if (filters.location && filters.location !== 'All' && filters.location !== '') {
+        const locLower = filters.location.toLowerCase();
+        if (locLower === 'remote (pakistan)') {
+          jobs = jobs.filter(j => j.location.toLowerCase().includes('remote'));
+        } else {
+          jobs = jobs.filter(j => j.location.toLowerCase().includes(locLower));
+        }
+      }
+
+      if (filters.role && filters.role !== 'All' && filters.role !== '') {
+        jobs = jobs.filter(j => getRoleCategory(j.title) === filters.role);
+      }
+
+      if (filters.remote === true || filters.remote === 'true') {
+        jobs = jobs.filter(j => j.location.toLowerCase().includes('remote'));
+      }
+
+      if (filters.match_level && filters.match_level !== 'All' && filters.match_level !== '') {
+        const level = filters.match_level;
+        if (level === '75' || level === 'Strong') {
+          jobs = jobs.filter(j => j.matchPercentage >= 75);
+        } else if (level === '60' || level === 'Good') {
+          jobs = jobs.filter(j => j.matchPercentage >= 60);
+        } else if (level === '40' || level === 'Moderate') {
+          jobs = jobs.filter(j => j.matchPercentage >= 40);
+        } else if (level === 'under40' || level === 'Low') {
+          jobs = jobs.filter(j => j.matchPercentage < 40);
+        }
+      }
+    }
+
+    return jobs.sort((a, b) => b.matchPercentage - a.matchPercentage);
   }
 }

@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import type { JobMatch } from '../context/AppContext';
+
+interface JobFilters {
+  location: string;
+  role: string;
+  match_level: string;
+  remote: boolean;
+}
 
 export default function JobsPage() {
   const {
@@ -15,24 +22,43 @@ export default function JobsPage() {
   } = useApp();
 
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Local state for search, filters, sorting
+  // Helper to parse query parameters from URL
+  const getFiltersFromUrl = (): JobFilters => {
+    const params = new URLSearchParams(location.search);
+    return {
+      location: params.get('location') || 'All',
+      role: params.get('role') || 'All',
+      match_level: params.get('match_level') || 'All',
+      remote: params.get('remote') === 'true',
+    };
+  };
+
+  const initialFilters = getFiltersFromUrl();
+
+  // Filter states
+  const [tempFilters, setTempFilters] = useState<JobFilters>(initialFilters);
+  const [appliedFilters, setAppliedFilters] = useState<JobFilters>(initialFilters);
+  
+  // Instant search & UI states
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedLocation, setSelectedLocation] = useState('All');
-  const [selectedRole, setSelectedRole] = useState('All');
-  const [selectedMinMatch, setSelectedMinMatch] = useState('All');
-  const [remoteOnly, setRemoteOnly] = useState(false);
   const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
   const [sortBy, setSortBy] = useState<'matchDesc' | 'matchAsc' | 'company' | 'title'>('matchDesc');
 
-  // Fetch matched jobs on mount/update based on analysis
+  // Sync state with URL search params when they change (e.g. on navigation back/forward)
   useEffect(() => {
-    if (analysisResult) {
-      fetchMatchedJobs(analysisResult.extractedSkills, analysisResult.jobRole);
-    } else {
-      fetchMatchedJobs([], '');
-    }
-  }, [analysisResult]);
+    const urlFilters = getFiltersFromUrl();
+    setAppliedFilters(urlFilters);
+    setTempFilters(urlFilters);
+  }, [location.search]);
+
+  // Fetch matched jobs from the backend when applied filters change (or analysis result changes)
+  useEffect(() => {
+    const skills = analysisResult ? analysisResult.extractedSkills : [];
+    const role = analysisResult ? analysisResult.jobRole : '';
+    fetchMatchedJobs(skills, role, appliedFilters);
+  }, [analysisResult, appliedFilters]);
 
   // Pakistan Cities for Location Filter
   const locations = ['All', 'Lahore', 'Karachi', 'Islamabad', 'Remote (Pakistan)'];
@@ -50,111 +76,53 @@ export default function JobsPage() {
     'Other'
   ];
 
-  const getRoleCategory = (title: string): string => {
-    const t = title.toLowerCase();
+  // Disable Apply button if no changes between temp and applied filters
+  const hasChanges = 
+    tempFilters.location !== appliedFilters.location ||
+    tempFilters.role !== appliedFilters.role ||
+    tempFilters.match_level !== appliedFilters.match_level ||
+    tempFilters.remote !== appliedFilters.remote;
+
+  const handleApplyFilters = () => {
+    const params = new URLSearchParams();
+    if (tempFilters.location !== 'All') params.set('location', tempFilters.location);
+    if (tempFilters.role !== 'All') params.set('role', tempFilters.role);
+    if (tempFilters.match_level !== 'All') params.set('match_level', tempFilters.match_level);
+    if (tempFilters.remote) params.set('remote', 'true');
     
-    // Healthcare & Medical
-    if (t.includes('nurse') || t.includes('doctor') || t.includes('pharmacist') || t.includes('clinical') || t.includes('medical') || t.includes('surgeon')) {
-      return 'Healthcare & Medical';
-    }
-    
-    // Finance & Business
-    if (t.includes('finance') || t.includes('analyst') || t.includes('accountant') || t.includes('auditor') || t.includes('tax') || t.includes('banker') || t.includes('brand manager')) {
-      return 'Finance & Business';
-    }
-    
-    // Education & Training
-    if (t.includes('teacher') || t.includes('professor') || t.includes('tutor') || t.includes('educat') || t.includes('academic')) {
-      return 'Education & Training';
-    }
-    
-    // Traditional Engineering
-    if (t.includes('mechanical') || t.includes('civil') || t.includes('electrical') || t.includes('chemical') || t.includes('industrial') || t.includes('aerospace') || t.includes('environmental')) {
-      return 'Traditional Engineering';
-    }
-    
-    // Legal
-    if (t.includes('lawyer') || t.includes('paralegal') || t.includes('legal') || t.includes('compliance') || t.includes('contract')) {
-      return 'Legal';
-    }
-    
-    // Operations & Support
-    if (t.includes('supply') || t.includes('logistics') || t.includes('inventory') || t.includes('support') || t.includes('operations') || t.includes('customer') || t.includes('hr ') || t.includes('human resources')) {
-      return 'Operations & Support';
-    }
-    
-    // Design & Creative
-    if (t.includes('designer') || t.includes('design') || t.includes('graphic') || t.includes('creative') || t.includes('art') || t.includes('ui/') || t.includes('ux') || t.includes(' ui') || t.includes('ux ')) {
-      return 'Design & Creative';
-    }
-    
-    // Technology & Software
-    if (
-      t.includes('developer') || 
-      t.includes('engineer') || 
-      t.includes('architect') || 
-      t.includes('programmer') || 
-      t.includes('sre') || 
-      t.includes('devops') || 
-      t.includes('cloud') || 
-      t.includes('data') || 
-      t.includes('scientist') || 
-      t.includes('machine learning') || 
-      t.includes('ai ') || 
-      t.includes('qa') || 
-      t.includes('blockchain') || 
-      t.includes('security')
-    ) {
-      return 'Technology & Software';
-    }
-    
-    return 'Other';
+    navigate(`/jobs?${params.toString()}`);
   };
 
-  // Filter jobs
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setShowBookmarkedOnly(false);
+    setSortBy('matchDesc');
+    setTempFilters({
+      location: 'All',
+      role: 'All',
+      match_level: 'All',
+      remote: false,
+    });
+    navigate('/jobs');
+  };
+
+  // Filter jobs locally for search query and bookmarks toggle
   const filteredJobs = matchedJobs
     .filter(job => {
-      // Search text query
+      // Search text query (matches title, company, description, or required skills)
       const matchesSearch =
         job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
         job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         job.requiredSkills.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
 
-      // Location filter (matching specific cities or remote)
-      const matchesLocation =
-        selectedLocation === 'All' ||
-        (selectedLocation === 'Remote (Pakistan)' && job.location.toLowerCase().includes('remote')) ||
-        (selectedLocation !== 'Remote (Pakistan)' && job.location.toLowerCase().includes(selectedLocation.toLowerCase()));
-
-      // Checkbox remote filter
-      const matchesRemoteOnly =
-        !remoteOnly || job.location.toLowerCase().includes('remote');
-
-      // Role category filter
-      const matchesRole =
-        selectedRole === 'All' ||
-        getRoleCategory(job.title) === selectedRole;
-
-      // Match % range filter
-      let matchesMinMatch = true;
-      if (selectedMinMatch === '75') {
-        matchesMinMatch = job.matchPercentage >= 75;
-      } else if (selectedMinMatch === '60') {
-        matchesMinMatch = job.matchPercentage >= 60;
-      } else if (selectedMinMatch === '40') {
-        matchesMinMatch = job.matchPercentage >= 40;
-      } else if (selectedMinMatch === 'under40') {
-        matchesMinMatch = job.matchPercentage < 40;
-      }
-
-      // Bookmarked filter
+      // Bookmarked toggle
       const matchesBookmarked = !showBookmarkedOnly || bookmarks.includes(job.id);
 
-      return matchesSearch && matchesLocation && matchesRemoteOnly && matchesRole && matchesMinMatch && matchesBookmarked;
+      return matchesSearch && matchesBookmarked;
     })
     .sort((a, b) => {
-      // Sorting
+      // Sorting logic
       if (sortBy === 'matchDesc') return b.matchPercentage - a.matchPercentage;
       if (sortBy === 'matchAsc') return a.matchPercentage - b.matchPercentage;
       if (sortBy === 'company') return a.company.localeCompare(b.company);
@@ -179,6 +147,52 @@ export default function JobsPage() {
           )
         )}
       </>
+    );
+  };
+
+  // Animated shimmer loading skeletons for job cards
+  const renderSkeletons = () => {
+    return (
+      <div className="flex flex-col gap-lg w-full">
+        {[1, 2, 3].map(n => (
+          <div
+            key={n}
+            className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-lg flex flex-col gap-md shadow-sm relative animate-pulse"
+          >
+            <div className="flex justify-between items-start gap-md">
+              <div className="flex flex-col gap-sm w-3/4">
+                <div className="flex flex-wrap items-center gap-sm">
+                  {/* Job Title placeholder */}
+                  <div className="h-6 bg-surface-container-highest rounded w-1/2" />
+                  {/* Match badge placeholder */}
+                  <div className="h-5 bg-surface-container-highest rounded w-28" />
+                  {/* Type placeholder */}
+                  <div className="h-5 bg-surface-container-highest rounded w-24" />
+                </div>
+                <div className="flex items-center gap-md mt-xs">
+                  {/* Company placeholder */}
+                  <div className="h-4 bg-surface-container-highest rounded w-32" />
+                  {/* Location placeholder */}
+                  <div className="h-4 bg-surface-container-highest rounded w-24" />
+                </div>
+              </div>
+              {/* Bookmark placeholder */}
+              <div className="h-9 w-9 bg-surface-container-highest rounded-lg" />
+            </div>
+            {/* Description placeholder */}
+            <div className="flex flex-col gap-xs mt-xs">
+              <div className="h-4 bg-surface-container-highest rounded w-full" />
+              <div className="h-4 bg-surface-container-highest rounded w-5/6" />
+            </div>
+            {/* Skills placeholder */}
+            <div className="flex flex-wrap gap-xs pt-xs">
+              <div className="h-6 bg-surface-container-highest rounded-full w-16" />
+              <div className="h-6 bg-surface-container-highest rounded-full w-20" />
+              <div className="h-6 bg-surface-container-highest rounded-full w-24" />
+            </div>
+          </div>
+        ))}
+      </div>
     );
   };
 
@@ -227,7 +241,7 @@ export default function JobsPage() {
           </div>
         </div>
 
-        {/* Global UX Informative Banner (No Fake Apply Notice) */}
+        {/* Global UX Informative Banner */}
         <div className="p-md bg-primary/5 border border-primary/20 rounded-xl flex items-start gap-md shadow-sm">
           <span className="material-symbols-outlined text-primary text-[22px] shrink-0">info</span>
           <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
@@ -235,7 +249,7 @@ export default function JobsPage() {
           </p>
         </div>
 
-        {/* Filter Controls Row */}
+        {/* Filter Controls Card */}
         <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-lg shadow-sm flex flex-col gap-md">
           <div className="flex flex-col lg:flex-row gap-md items-stretch lg:items-center">
             {/* Search Input */}
@@ -276,8 +290,8 @@ export default function JobsPage() {
                 Category
               </label>
               <select
-                value={selectedRole}
-                onChange={e => setSelectedRole(e.target.value)}
+                value={tempFilters.role}
+                onChange={e => setTempFilters(prev => ({ ...prev, role: e.target.value }))}
                 className="p-sm bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-on-surface text-body-sm focus:outline-none cursor-pointer"
               >
                 {roleCategories.map(cat => (
@@ -294,8 +308,8 @@ export default function JobsPage() {
                 Location
               </label>
               <select
-                value={selectedLocation}
-                onChange={e => setSelectedLocation(e.target.value)}
+                value={tempFilters.location}
+                onChange={e => setTempFilters(prev => ({ ...prev, location: e.target.value }))}
                 className="p-sm bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-on-surface text-body-sm focus:outline-none cursor-pointer"
               >
                 {locations.map(loc => (
@@ -312,8 +326,8 @@ export default function JobsPage() {
                 Match Percentage
               </label>
               <select
-                value={selectedMinMatch}
-                onChange={e => setSelectedMinMatch(e.target.value)}
+                value={tempFilters.match_level}
+                onChange={e => setTempFilters(prev => ({ ...prev, match_level: e.target.value }))}
                 className="p-sm bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-on-surface text-body-sm focus:outline-none cursor-pointer"
               >
                 <option value="All">All Match Scores</option>
@@ -329,8 +343,8 @@ export default function JobsPage() {
               <label className="inline-flex items-center gap-sm cursor-pointer select-none">
                 <input
                   type="checkbox"
-                  checked={remoteOnly}
-                  onChange={e => setRemoteOnly(e.target.checked)}
+                  checked={tempFilters.remote}
+                  onChange={e => setTempFilters(prev => ({ ...prev, remote: e.target.checked }))}
                   className="w-4 h-4 rounded border-outline-variant/30 text-primary focus:ring-primary focus:ring-2 cursor-pointer"
                 />
                 <span className="font-label-md text-label-md text-on-surface">Remote Jobs Only</span>
@@ -349,15 +363,35 @@ export default function JobsPage() {
                 <span className="font-label-md text-label-md text-on-surface">Show Bookmarked ({bookmarks.length})</span>
               </label>
             </div>
+
+            {/* Action Buttons Row */}
+            <div className="flex gap-md sm:col-span-2 lg:col-span-5 justify-end mt-md pt-md border-t border-outline-variant/10">
+              <button
+                onClick={handleResetFilters}
+                className="bg-surface-container border border-outline-variant text-on-surface font-label-md text-label-md px-lg py-md rounded-lg active:scale-95 transition-all flex items-center justify-center gap-sm hover:bg-surface-container-highest"
+              >
+                <span className="material-symbols-outlined text-[18px]">restart_alt</span>
+                Reset Filters
+              </button>
+              <button
+                onClick={handleApplyFilters}
+                disabled={!hasChanges}
+                className={`font-label-md text-label-md px-lg py-md rounded-lg active:scale-95 transition-all flex items-center justify-center gap-sm shadow-sm font-bold ${
+                  hasChanges
+                    ? 'bg-primary text-on-primary hover:opacity-95 hover:shadow-md'
+                    : 'bg-surface-container-highest text-on-surface-variant/40 cursor-not-allowed border border-outline-variant/10 shadow-none'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[18px]">filter_list</span>
+                Apply Filters
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Jobs List / Grid Container */}
         {jobsLoading ? (
-          <div className="py-xl bg-surface-container-low border border-outline-variant/30 rounded-xl shadow-sm text-center">
-            <div className="h-12 w-12 rounded-full border-4 border-primary border-t-transparent animate-spin mx-auto mb-md" />
-            <h3 className="font-headline-sm text-headline-sm text-on-surface">Searching Listings Database...</h3>
-          </div>
+          renderSkeletons()
         ) : jobsError ? (
           <div className="py-xl bg-error-container text-on-error-container border border-error/30 rounded-xl p-lg text-center flex flex-col items-center gap-sm">
             <span className="material-symbols-outlined text-[48px]">warning</span>
@@ -365,7 +399,7 @@ export default function JobsPage() {
             <p className="font-body-md text-body-md max-w-md">{jobsError}</p>
           </div>
         ) : filteredJobs.length === 0 ? (
-          <div className="py-xl bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl text-center flex flex-col items-center gap-md">
+          <div className="py-xl bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl text-center flex flex-col items-center gap-md animate-fade-in">
             <span className="material-symbols-outlined text-primary text-[48px]">search_off</span>
             <div>
               <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">No jobs found matching your filters</h3>
@@ -374,21 +408,14 @@ export default function JobsPage() {
               </p>
             </div>
             <button
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedLocation('All');
-                setSelectedRole('All');
-                setSelectedMinMatch('All');
-                setRemoteOnly(false);
-                setShowBookmarkedOnly(false);
-              }}
+              onClick={handleResetFilters}
               className="bg-primary/10 hover:bg-primary/20 text-primary font-label-md text-label-md px-lg py-md rounded-lg transition-all"
             >
               Reset Filters
             </button>
           </div>
         ) : (
-          <div className="flex flex-col gap-lg">
+          <div className="flex flex-col gap-lg animate-fade-in">
             {filteredJobs.map((job: JobMatch) => {
               const isLowMatch = job.matchPercentage < 40;
               const isBookmarked = bookmarks.includes(job.id);
