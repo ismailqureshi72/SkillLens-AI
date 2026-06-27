@@ -56,6 +56,7 @@ interface AppContextType {
   trends: TrendsData | null;
   fetchTrends: (role: string) => Promise<void>;
   matchedJobs: JobMatch[];
+  setMatchedJobs: (jobs: JobMatch[]) => void;
   fetchMatchedJobs: (skills: string[], role: string, filters?: any) => Promise<void>;
   bookmarks: string[];
   toggleBookmark: (jobId: string) => void;
@@ -200,6 +201,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         trends,
         fetchTrends,
         matchedJobs,
+        setMatchedJobs,
         fetchMatchedJobs,
         bookmarks,
         toggleBookmark,

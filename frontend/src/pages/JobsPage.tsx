@@ -14,6 +14,7 @@ export default function JobsPage() {
   const {
     analysisResult,
     matchedJobs,
+    setMatchedJobs,
     fetchMatchedJobs,
     bookmarks,
     toggleBookmark,
@@ -41,10 +42,17 @@ export default function JobsPage() {
   const [tempFilters, setTempFilters] = useState<JobFilters>(initialFilters);
   const [appliedFilters, setAppliedFilters] = useState<JobFilters>(initialFilters);
   
-  // Instant search & UI states
+  // Instant search, search flag, & UI states
+  const [hasSearched, setHasSearched] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
   const [sortBy, setSortBy] = useState<'matchDesc' | 'matchAsc' | 'company' | 'title'>('matchDesc');
+
+  // Reset results on mount to prevent persistence after page refresh
+  useEffect(() => {
+    setMatchedJobs([]);
+    setHasSearched(false);
+  }, []);
 
   // Sync state with URL search params when they change (e.g. on navigation back/forward)
   useEffect(() => {
@@ -52,13 +60,6 @@ export default function JobsPage() {
     setAppliedFilters(urlFilters);
     setTempFilters(urlFilters);
   }, [location.search]);
-
-  // Fetch matched jobs from the backend when applied filters change (or analysis result changes)
-  useEffect(() => {
-    const skills = analysisResult ? analysisResult.extractedSkills : [];
-    const role = analysisResult ? analysisResult.jobRole : '';
-    fetchMatchedJobs(skills, role, appliedFilters);
-  }, [analysisResult, appliedFilters]);
 
   // Pakistan Cities for Location Filter
   const locations = ['All', 'Lahore', 'Karachi', 'Islamabad', 'Remote (Pakistan)'];
@@ -76,12 +77,14 @@ export default function JobsPage() {
     'Other'
   ];
 
-  // Disable Apply button if no changes between temp and applied filters
+  // Disable Apply/Refresh button only if already searched and no filter changes are pending
   const hasChanges = 
     tempFilters.location !== appliedFilters.location ||
     tempFilters.role !== appliedFilters.role ||
     tempFilters.match_level !== appliedFilters.match_level ||
     tempFilters.remote !== appliedFilters.remote;
+
+  const canRefresh = !hasSearched || hasChanges;
 
   const handleApplyFilters = () => {
     const params = new URLSearchParams();
@@ -91,6 +94,13 @@ export default function JobsPage() {
     if (tempFilters.remote) params.set('remote', 'true');
     
     navigate(`/jobs?${params.toString()}`);
+    setAppliedFilters(tempFilters);
+
+    // Fetch matching jobs explicitly on user action
+    const skills = analysisResult ? analysisResult.extractedSkills : [];
+    const role = analysisResult ? analysisResult.jobRole : '';
+    fetchMatchedJobs(skills, role, tempFilters);
+    setHasSearched(true);
   };
 
   const handleResetFilters = () => {
@@ -103,6 +113,14 @@ export default function JobsPage() {
       match_level: 'All',
       remote: false,
     });
+    setAppliedFilters({
+      location: 'All',
+      role: 'All',
+      match_level: 'All',
+      remote: false,
+    });
+    setMatchedJobs([]);
+    setHasSearched(false);
     navigate('/jobs');
   };
 
@@ -375,15 +393,15 @@ export default function JobsPage() {
               </button>
               <button
                 onClick={handleApplyFilters}
-                disabled={!hasChanges}
+                disabled={!canRefresh}
                 className={`font-label-md text-label-md px-lg py-md rounded-lg active:scale-95 transition-all flex items-center justify-center gap-sm shadow-sm font-bold ${
-                  hasChanges
+                  canRefresh
                     ? 'bg-primary text-on-primary hover:opacity-95 hover:shadow-md'
                     : 'bg-surface-container-highest text-on-surface-variant/40 cursor-not-allowed border border-outline-variant/10 shadow-none'
                 }`}
               >
-                <span className="material-symbols-outlined text-[18px]">filter_list</span>
-                Apply Filters
+                <span className="material-symbols-outlined text-[18px]">refresh</span>
+                Refresh Results
               </button>
             </div>
           </div>
@@ -392,6 +410,23 @@ export default function JobsPage() {
         {/* Jobs List / Grid Container */}
         {jobsLoading ? (
           renderSkeletons()
+        ) : !hasSearched ? (
+          <div className="py-xl bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl text-center flex flex-col items-center gap-md animate-fade-in">
+            <span className="material-symbols-outlined text-primary text-[48px]">find_in_page</span>
+            <div>
+              <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">No job matches yet</h3>
+              <p className="font-body-md text-body-md text-on-surface-variant mt-xs">
+                Apply filters and click 'Refresh Results'.
+              </p>
+            </div>
+            <button
+              onClick={handleApplyFilters}
+              className="bg-primary text-on-primary font-label-md text-label-md px-lg py-md rounded-lg active:scale-95 transition-all flex items-center justify-center gap-sm shadow-sm font-bold"
+            >
+              <span className="material-symbols-outlined text-[18px]">refresh</span>
+              Refresh Results
+            </button>
+          </div>
         ) : jobsError ? (
           <div className="py-xl bg-error-container text-on-error-container border border-error/30 rounded-xl p-lg text-center flex flex-col items-center gap-sm">
             <span className="material-symbols-outlined text-[48px]">warning</span>
