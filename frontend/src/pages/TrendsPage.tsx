@@ -12,6 +12,7 @@ export default function TrendsPage() {
 
   // State Management
   const [selectedMarket, setSelectedMarket] = useState("Computer Science");
+  const [customInput, setCustomInput] = useState("");
   const [customMarket, setCustomMarket] = useState("");
   const [activeData, setActiveData] = useState<MarketTrend>(MARKET_TRENDS_DATASET["Computer Science"]);
 
@@ -148,7 +149,14 @@ export default function TrendsPage() {
             </label>
             <select
               value={selectedMarket}
-              onChange={e => setSelectedMarket(e.target.value)}
+              onChange={e => {
+                const val = e.target.value;
+                setSelectedMarket(val);
+                if (val !== "Custom") {
+                  setCustomInput("");
+                  setCustomMarket("");
+                }
+              }}
               className="p-md bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-on-surface text-body-md focus:outline-none focus:border-primary/50 cursor-pointer transition-colors"
             >
               <option value="Computer Science">Computer Science (default)</option>
@@ -161,17 +169,31 @@ export default function TrendsPage() {
           </div>
 
           {selectedMarket === "Custom" && (
-            <div className="flex-1 flex flex-col gap-xs animate-fade-in">
+            <div className="flex-grow flex flex-col gap-xs animate-fade-in">
               <label className="font-label-sm text-label-sm text-on-surface-variant">
-                Enter Custom Field or Role
+                Enter Custom Field or Role (Press Enter or click Apply to search)
               </label>
-              <input
-                type="text"
-                value={customMarket}
-                onChange={e => setCustomMarket(e.target.value)}
-                placeholder="e.g. Flutter Developer, Product Manager..."
-                className="p-md bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-on-surface text-body-md focus:outline-none focus:border-primary/50 transition-colors"
-              />
+              <div className="flex gap-sm">
+                <input
+                  type="text"
+                  value={customInput}
+                  onChange={e => setCustomInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      setCustomMarket(customInput);
+                    }
+                  }}
+                  placeholder="e.g. Flutter Developer, Product Manager..."
+                  className="flex-grow p-md bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-on-surface text-body-md focus:outline-none focus:border-primary/50 transition-colors"
+                />
+                <button
+                  onClick={() => setCustomMarket(customInput)}
+                  className="bg-primary text-on-primary font-label-md text-label-md px-lg py-md rounded-lg active:scale-95 transition-all flex items-center justify-center gap-xs hover:opacity-95 shadow-sm font-bold"
+                >
+                  <span className="material-symbols-outlined text-[18px]">search</span>
+                  Apply
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -187,8 +209,9 @@ export default function TrendsPage() {
             </div>
             <button
               onClick={() => {
-                setSelectedMarket(closestCategory);
-                setCustomMarket("");
+              setSelectedMarket(closestCategory);
+              setCustomInput("");
+              setCustomMarket("");
               }}
               className="bg-primary/10 hover:bg-primary/20 text-primary font-label-md text-label-md px-md py-sm rounded-lg transition-all text-xs whitespace-nowrap"
             >
