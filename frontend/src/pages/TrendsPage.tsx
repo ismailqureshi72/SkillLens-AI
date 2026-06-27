@@ -1,39 +1,123 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useApp } from '../context/AppContext';
 import CompanySection from '../components/CompanySection';
+import { MARKET_TRENDS_DATASET } from '../data/marketTrendsData';
+import type { MarketTrend } from '../data/marketTrendsData';
 
 export default function TrendsPage() {
-  const { trends, fetchTrends, theme } = useApp();
+  const { theme } = useApp();
   const navigate = useNavigate();
 
-  // Load default trends (e.g. for Senior Product Designer) if none selected
-  useEffect(() => {
-    if (!trends) {
-      fetchTrends('Senior Product Designer');
+  // State Management
+  const [selectedMarket, setSelectedMarket] = useState("Computer Science");
+  const [customMarket, setCustomMarket] = useState("");
+  const [activeData, setActiveData] = useState<MarketTrend>(MARKET_TRENDS_DATASET["Computer Science"]);
+
+  // Suggest closest category helper
+  const getClosestCategory = (input: string): string => {
+    const normalized = input.toLowerCase();
+    if (
+      normalized.includes('tech') ||
+      normalized.includes('code') ||
+      normalized.includes('software') ||
+      normalized.includes('develop') ||
+      normalized.includes('react') ||
+      normalized.includes('program') ||
+      normalized.includes('computer') ||
+      normalized.includes('web') ||
+      normalized.includes('engineer')
+    ) {
+      return 'Computer Science';
     }
-  }, [trends]);
+    if (
+      normalized.includes('market') ||
+      normalized.includes('seo') ||
+      normalized.includes('ad ') ||
+      normalized.includes('sales') ||
+      normalized.includes('growth') ||
+      normalized.includes('social media')
+    ) {
+      return 'Marketing';
+    }
+    if (
+      normalized.includes('financ') ||
+      normalized.includes('account') ||
+      normalized.includes('audit') ||
+      normalized.includes('tax') ||
+      normalized.includes('bank') ||
+      normalized.includes('money')
+    ) {
+      return 'Finance';
+    }
+    if (
+      normalized.includes('design') ||
+      normalized.includes('ux') ||
+      normalized.includes('ui') ||
+      normalized.includes('figma') ||
+      normalized.includes('art') ||
+      normalized.includes('creative')
+    ) {
+      return 'Design';
+    }
+    if (
+      normalized.includes('business') ||
+      normalized.includes('manage') ||
+      normalized.includes('product') ||
+      normalized.includes('operation') ||
+      normalized.includes('hr ') ||
+      normalized.includes('recru')
+    ) {
+      return 'Business / Management';
+    }
+    return 'Computer Science'; // Fallback
+  };
 
-  if (!trends) {
-    return (
-      <main className="flex-grow pt-24 pb-xl transition-colors duration-200">
-        <div className="max-w-max-width mx-auto px-margin-desktop text-center py-xl bg-surface-container-low border border-outline-variant/30 rounded-xl shadow-sm">
-          <div className="h-12 w-12 rounded-full border-4 border-primary border-t-transparent animate-spin mx-auto mb-md" />
-          <h3 className="font-headline-sm text-headline-sm text-on-surface">Loading Market Data...</h3>
-        </div>
-      </main>
-    );
-  }
+  // Generate dynamic stats for custom input
+  const getCustomMarketData = (input: string): MarketTrend => {
+    const cleaned = input.trim() || 'Custom Field';
+    return {
+      marketDemand: [
+        { name: 'Core Skillset', value: 85 },
+        { name: 'Strategy & Planning', value: 75 },
+        { name: 'Tools Proficiency', value: 80 },
+        { name: 'Collaboration', value: 70 }
+      ],
+      trendingTech: [
+        { name: `${cleaned} Frameworks`, growth: '+35%', level: 'High' },
+        { name: 'Analytics Dashboards', growth: '+28%', level: 'Medium' },
+        { name: 'AI Assist Utilities', growth: '+54%', level: 'Critical' },
+        { name: 'Collaboration Platforms', growth: '+40%', level: 'High' }
+      ],
+      salaryMin: 70000,
+      salaryMedian: 160000,
+      salaryMax: 320000,
+      hiringCompanies: ['Systems Limited', 'Arbisoft', '10Pearls', 'VentureDive', 'Bazaar Technologies'],
+      jobAvailability: `Growing demand for specialized ${cleaned} expertise in Lahore, Karachi, and Islamabad.`
+    };
+  };
 
-  const { jobRole, marketDemand, trendingTech, salaryMin, salaryMax, salaryMedian, hiringCompanies } = trends;
+  // Sync active data when selectedMarket or customMarket changes
+  useEffect(() => {
+    if (selectedMarket === "Custom") {
+      setActiveData(getCustomMarketData(customMarket));
+    } else {
+      setActiveData(MARKET_TRENDS_DATASET[selectedMarket]);
+    }
+  }, [selectedMarket, customMarket]);
 
   const chartColor = theme === 'dark' ? '#3b82f6' : '#0052cc';
   const gridColor = theme === 'dark' ? 'rgba(144,144,151,0.1)' : 'rgba(115,118,133,0.1)';
 
+  const closestCategory = selectedMarket === "Custom" && customMarket.trim().length > 0
+    ? getClosestCategory(customMarket)
+    : "";
+
   return (
     <main className="flex-grow pt-24 pb-xl transition-colors duration-200">
       <section className="max-w-max-width mx-auto px-margin-desktop flex flex-col gap-xl">
+        
         {/* Header Title Block */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-md border-b border-outline-variant/30 pb-lg">
           <div>
@@ -42,7 +126,7 @@ export default function TrendsPage() {
               <span className="font-label-md text-label-md text-on-surface-variant">Live Market Calibration</span>
             </div>
             <h2 className="font-headline-lg text-headline-lg text-on-surface">
-              Market Trends: {jobRole}
+              Market Trends: {selectedMarket === "Custom" && customMarket.trim() ? customMarket : selectedMarket}
             </h2>
           </div>
 
@@ -55,6 +139,64 @@ export default function TrendsPage() {
           </button>
         </div>
 
+        {/* Dynamic Market Selector Card */}
+        <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-lg shadow-sm flex flex-col md:flex-row md:items-end gap-md">
+          <div className="flex-1 flex flex-col gap-xs">
+            <label className="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-xs">
+              <span className="material-symbols-outlined text-primary text-[18px]">domain</span>
+              Select Market
+            </label>
+            <select
+              value={selectedMarket}
+              onChange={e => setSelectedMarket(e.target.value)}
+              className="p-md bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-on-surface text-body-md focus:outline-none focus:border-primary/50 cursor-pointer transition-colors"
+            >
+              <option value="Computer Science">Computer Science (default)</option>
+              <option value="Business / Management">Business / Management</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Finance">Finance</option>
+              <option value="Design">Design</option>
+              <option value="Custom">Custom (user input)</option>
+            </select>
+          </div>
+
+          {selectedMarket === "Custom" && (
+            <div className="flex-1 flex flex-col gap-xs animate-fade-in">
+              <label className="font-label-sm text-label-sm text-on-surface-variant">
+                Enter Custom Field or Role
+              </label>
+              <input
+                type="text"
+                value={customMarket}
+                onChange={e => setCustomMarket(e.target.value)}
+                placeholder="e.g. Flutter Developer, Product Manager..."
+                className="p-md bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-on-surface text-body-md focus:outline-none focus:border-primary/50 transition-colors"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Custom Role Category Suggestion Banner */}
+        {closestCategory && (
+          <div className="p-md bg-primary/5 border border-primary/20 rounded-xl flex items-center justify-between gap-md animate-fade-in shadow-sm">
+            <div className="flex items-center gap-md">
+              <span className="material-symbols-outlined text-primary text-[22px]">lightbulb</span>
+              <p className="font-body-sm text-body-sm text-on-surface-variant">
+                We noticed your input is related to <strong>{closestCategory}</strong>. Would you like to load the standardized dataset for this field?
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setSelectedMarket(closestCategory);
+                setCustomMarket("");
+              }}
+              className="bg-primary/10 hover:bg-primary/20 text-primary font-label-md text-label-md px-md py-sm rounded-lg transition-all text-xs whitespace-nowrap"
+            >
+              Use {closestCategory}
+            </button>
+          </div>
+        )}
+
         {/* First Row: Demand Chart & Trending Tech table */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter items-stretch">
           {/* Skill Demand Forecast Chart (2 Columns wide) */}
@@ -66,9 +208,9 @@ export default function TrendsPage() {
             
             <div className="flex-grow h-72 min-h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={marketDemand} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <BarChart data={activeData.marketDemand} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
-                  <XAxis dataKey="name" stroke="currentColor" fontSize={12} tickLine={false} />
+                  <XAxis dataKey="name" stroke="currentColor" fontSize={11} tickLine={false} />
                   <YAxis stroke="currentColor" fontSize={12} tickLine={false} />
                   <Tooltip 
                     contentStyle={{
@@ -92,11 +234,11 @@ export default function TrendsPage() {
           <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl shadow-sm flex flex-col gap-md">
             <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm pb-xs border-b border-outline-variant/20">
               <span className="material-symbols-outlined text-primary">local_fire_department</span>
-              Trending Technologies
+              Trending Skills / Technologies
             </h3>
 
             <div className="flex flex-col gap-md mt-xs flex-grow justify-center">
-              {trendingTech.map((tech) => (
+              {activeData.trendingTech.map((tech) => (
                 <div key={tech.name} className="flex justify-between items-center p-md bg-surface-container-lowest border border-outline-variant/10 rounded-lg hover:border-primary/20 transition-all duration-150">
                   <div>
                     <h4 className="font-label-md text-label-md text-on-surface font-bold">
@@ -156,7 +298,7 @@ export default function TrendsPage() {
                     Min Baseline
                   </span>
                   <span className="font-headline-sm text-[16px] text-on-surface font-extrabold">
-                    PKR {salaryMin.toLocaleString()}
+                    PKR {activeData.salaryMin.toLocaleString()}
                   </span>
                 </div>
                 <div>
@@ -164,7 +306,7 @@ export default function TrendsPage() {
                     Median Expectation
                   </span>
                   <span className="font-headline-sm text-headline-sm text-primary font-extrabold">
-                    PKR {salaryMedian.toLocaleString()}
+                    PKR {activeData.salaryMedian.toLocaleString()}
                   </span>
                 </div>
                 <div>
@@ -172,16 +314,17 @@ export default function TrendsPage() {
                     Max Potential
                   </span>
                   <span className="font-headline-sm text-[16px] text-on-surface font-extrabold">
-                    PKR {salaryMax.toLocaleString()}
+                    PKR {activeData.salaryMax.toLocaleString()}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="p-md bg-surface border border-outline-variant/10 rounded-lg flex items-start gap-md mt-sm">
-              <span className="material-symbols-outlined text-primary">info</span>
-              <p className="font-body-sm text-body-sm text-on-surface-variant">
-                <strong>Actionable Insight:</strong> Developing competency in missing skills listed in your report can increase your market valuation by an estimated <span className="text-green-600 font-bold">14.8%</span>.
+            {/* Dynamic Job Availability Insights */}
+            <div className="p-md bg-primary/5 border border-primary/20 rounded-lg flex items-start gap-md mt-sm">
+              <span className="material-symbols-outlined text-primary text-[20px] shrink-0">analytics</span>
+              <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                <strong>Job Availability Insight:</strong> {activeData.jobAvailability}
               </p>
             </div>
           </div>
@@ -194,11 +337,11 @@ export default function TrendsPage() {
             </h3>
             
             <p className="font-body-sm text-body-sm text-on-surface-variant">
-              Active enterprise partners listing requirements for {jobRole} components.
+              Active enterprise partners listing requirements for localized components.
             </p>
 
             <div className="flex flex-col gap-sm mt-sm flex-grow justify-center">
-              {hiringCompanies.map((company) => (
+              {activeData.hiringCompanies.map((company) => (
                 <div key={company} className="flex items-center gap-md p-sm bg-surface-container-lowest border border-outline-variant/10 rounded-lg">
                   <span className="material-symbols-outlined text-primary text-[20px]">
                     corporate_fare
