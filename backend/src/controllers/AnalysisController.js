@@ -24,17 +24,16 @@ export class AnalysisController {
             const resumeText = file ? await parser.extractText(file.path) : resumeTextBody;
             // 2. Validate Resume
             const structureScore = checkStructureScore(resumeText);
-            const keywordScore = checkKeywordScore(resumeText);
             const aiSaysYes = await ai.classifyResume(resumeText);
-            const aiScore = aiSaysYes ? 30 : 0;
-            const totalScore = structureScore + keywordScore + aiScore;
-            if (totalScore < 60) {
+            const forbiddenDetected = hasForbiddenKeywords(resumeText);
+            const isValid = aiSaysYes && (structureScore > 0) && !forbiddenDetected;
+            if (!isValid) {
                 // Remove uploaded file from server after processing
                 if (file && fs.existsSync(file.path)) {
                     fs.unlinkSync(file.path);
                 }
                 return res.status(400).json({
-                    error: "Invalid document. Please upload a valid CV or resume containing sections like Education, Experience, and Skills."
+                    error: "Invalid document. Please upload a valid CV or resume. Documents like offer letters, contracts, or reports are not supported."
                 });
             }
             // 3. AI Analysis
@@ -360,7 +359,6 @@ function checkStructureScore(text) {
         { keywords: [/experience/i, /work history/i, /employment/i, /career/i, /job history/i, /professional background/i] },
         { keywords: [/skills/i, /technologies/i, /core competencies/i, /expertise/i, /proficiencies/i] },
         { keywords: [/projects/i, /key projects/i, /personal projects/i, /selected projects/i] },
-        { keywords: [/contact/i, /email/i, /phone/i, /address/i, /linkedin/i, /github/i, /@/i] },
     ];
     let matchedSections = 0;
     for (const section of structureList) {
@@ -369,7 +367,18 @@ function checkStructureScore(text) {
             matchedSections++;
         }
     }
-    return matchedSections >= 3 ? 40 : 0;
+    return matchedSections >= 2 ? 40 : 0;
+}
+function hasForbiddenKeywords(text) {
+    const forbiddenList = [
+        /offer letter/i,
+        /dear candidate/i,
+        /we are pleased to offer/i,
+        /terms and conditions/i,
+        /agreement/i,
+        /contract/i
+    ];
+    return forbiddenList.some(regex => regex.test(text));
 }
 function checkKeywordScore(text) {
     const requiredKeywords = ["education", "experience", "skills", "projects", "internship", "university"];

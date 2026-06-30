@@ -61,14 +61,19 @@ export class AIService {
      * @returns boolean indicating if the AI confirms it is a resume.
      */
     async classifyResume(resumeText) {
-        const prompt = `
-      Is this document a resume or CV? Answer ONLY YES or NO.
-      
-      Document Content:
-      ---
-      ${resumeText}
-      ---
-    `;
+        const prompt = `Classify this document.
+Is it a professional CV or resume?
+
+Rules:
+* A CV/resume includes sections like education, experience, skills, projects.
+* It summarizes a person's qualifications.
+* It is NOT an offer letter, contract, report, or business document.
+
+Answer ONLY one word:
+YES or NO.
+
+Document:
+${resumeText}`;
         try {
             const response = await openai.chat.completions.create({
                 model: process.env.OPENAI_MODEL || 'gpt-4o',
