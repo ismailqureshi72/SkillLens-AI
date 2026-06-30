@@ -28,7 +28,24 @@ export class AnalysisController {
       // 1. Extract text from resume or use body text
       const resumeText = file ? await parser.extractText(file.path) : resumeTextBody;
 
-      // 2. AI Analysis
+      // 2. Validate Resume
+      const structureScore = checkStructureScore(resumeText);
+      const keywordScore = checkKeywordScore(resumeText);
+      const aiSaysYes = await ai.classifyResume(resumeText);
+      const aiScore = aiSaysYes ? 30 : 0;
+      const totalScore = structureScore + keywordScore + aiScore;
+
+      if (totalScore < 60) {
+        // Remove uploaded file from server after processing
+        if (file && fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path);
+        }
+        return res.status(400).json({
+          error: "Invalid document. Please upload a valid CV or resume containing sections like Education, Experience, and Skills."
+        });
+      }
+
+      // 3. AI Analysis
       const analysisResult = await ai.analyzeResume(resumeText, jobRole);
 
       // 3. Save to database
@@ -354,4 +371,38 @@ export class AnalysisController {
       return res.status(500).json({ error: 'Failed to fetch trends details.' });
     }
   }
+}
+
+function checkStructureScore(text: string): number {
+  const structureList = [
+    { keywords: [/education/i, /degree/i, /academic/i, /university/i, /school/i, /college/i] },
+    { keywords: [/experience/i, /work history/i, /employment/i, /career/i, /job history/i, /professional background/i] },
+    { keywords: [/skills/i, /technologies/i, /core competencies/i, /expertise/i, /proficiencies/i] },
+    { keywords: [/projects/i, /key projects/i, /personal projects/i, /selected projects/i] },
+    { keywords: [/contact/i, /email/i, /phone/i, /address/i, /linkedin/i, /github/i, /@/i] },
+  ];
+
+  let matchedSections = 0;
+  for (const section of structureList) {
+    const isMatched = section.keywords.some(regex => regex.test(text));
+    if (isMatched) {
+      matchedSections++;
+    }
+  }
+
+  return matchedSections >= 3 ? 40 : 0;
+}
+
+function checkKeywordScore(text: string): number {
+  const requiredKeywords = ["education", "experience", "skills", "projects", "internship", "university"];
+  const lowerText = text.toLowerCase();
+  
+  let keywordCount = 0;
+  for (const kw of requiredKeywords) {
+    if (lowerText.includes(kw)) {
+      keywordCount++;
+    }
+  }
+
+  return keywordCount >= 2 ? 30 : 0;
 }

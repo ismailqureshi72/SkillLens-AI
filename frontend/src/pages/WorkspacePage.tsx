@@ -16,6 +16,7 @@ export default function WorkspacePage() {
   const isDemo = location.state?.isDemo || false;
 
   const [file, setFile] = useState<File | null>(initialFile);
+  const [localError, setLocalError] = useState('');
   const [roleQuery, setRoleQuery] = useState('');
   const [selectedRole, setSelectedRoleState] = useState<string>('');
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -102,6 +103,7 @@ export default function WorkspacePage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
+      setLocalError('');
     }
   };
 
@@ -297,8 +299,9 @@ export default function WorkspacePage() {
       console.error(err);
       clearInterval(stepInterval);
       setAnalyzing(false);
-      setError(err.response?.data?.error || "Failed to analyze resume. Please verify backend configurations.");
-      alert("Error: " + (err.response?.data?.error || "Failed to run analysis. Make sure the backend server is running on port 5000."));
+      const errMsg = err.response?.data?.error || "Failed to analyze resume. Please verify backend configurations.";
+      setLocalError(errMsg);
+      setError(errMsg);
     }
   };
 
@@ -308,6 +311,37 @@ export default function WorkspacePage() {
         <h2 className="font-headline-lg text-headline-lg text-on-surface mb-lg">
           Analysis Workspace
         </h2>
+
+        {/* Local Validation Error Banner */}
+        {localError && (
+          <div className="mb-lg p-md bg-error/10 border border-error/20 rounded-xl flex items-start gap-md shadow-sm animate-fade-in">
+            <span className="material-symbols-outlined text-error text-[24px] shrink-0 mt-xs">error</span>
+            <div className="flex-grow">
+              <h4 className="font-headline-sm text-headline-sm text-error font-bold">Analysis Blocked</h4>
+              <p className="font-body-sm text-body-sm text-on-surface-variant mt-xs leading-relaxed">
+                {localError}
+              </p>
+              <div className="mt-md flex gap-sm">
+                <button
+                  onClick={() => {
+                    setLocalError('');
+                    setFile(null);
+                    document.getElementById("file-input-workspace")?.click();
+                  }}
+                  className="bg-error text-on-error font-label-sm text-label-sm px-md py-sm rounded-lg active:scale-95 transition-all font-bold cursor-pointer"
+                >
+                  Upload Another CV / Resume
+                </button>
+                <button
+                  onClick={() => setLocalError('')}
+                  className="bg-transparent border border-outline-variant text-on-surface-variant font-label-sm text-label-sm px-md py-sm rounded-lg active:scale-95 transition-all font-bold cursor-pointer"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {!analyzing ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter">

@@ -17,5 +17,11 @@ export declare class AIService {
      * @returns Structured analysis response.
      */
     analyzeResume(resumeText: string, jobRole: string): Promise<AnalysisResponse>;
+    /**
+     * Classifies if a document is a resume or CV.
+     * @param resumeText The extracted text from the document.
+     * @returns boolean indicating if the AI confirms it is a resume.
+     */
+    classifyResume(resumeText: string): Promise<boolean>;
 }
 //# sourceMappingURL=AIService.d.ts.map

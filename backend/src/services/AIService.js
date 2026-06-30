@@ -55,5 +55,37 @@ export class AIService {
         const cleanedResult = result.replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/, '$1').trim();
         return JSON.parse(cleanedResult);
     }
+    /**
+     * Classifies if a document is a resume or CV.
+     * @param resumeText The extracted text from the document.
+     * @returns boolean indicating if the AI confirms it is a resume.
+     */
+    async classifyResume(resumeText) {
+        const prompt = `
+      Is this document a resume or CV? Answer ONLY YES or NO.
+      
+      Document Content:
+      ---
+      ${resumeText}
+      ---
+    `;
+        try {
+            const response = await openai.chat.completions.create({
+                model: process.env.OPENAI_MODEL || 'gpt-4o',
+                messages: [
+                    { role: 'system', content: 'You are an assistant that only responds with YES or NO.' },
+                    { role: 'user', content: prompt },
+                ],
+                temperature: 0,
+            });
+            const result = response.choices[0]?.message?.content?.trim().toUpperCase();
+            return result === 'YES' || result?.includes('YES') === true;
+        }
+        catch (err) {
+            console.error('AI Classification Error:', err);
+            // Fallback to true on network/API failure to avoid blocking users
+            return true;
+        }
+    }
 }
 //# sourceMappingURL=AIService.js.map
