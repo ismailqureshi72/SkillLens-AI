@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useApp } from '../context/AppContext';
@@ -10,6 +10,7 @@ export default function WorkspacePage() {
   const { setAnalysisResult, setError } = useApp();
   const location = useLocation();
   const navigate = useNavigate();
+  const intervalRef = useRef<any>(null);
 
   // Retrieve state passed from landing page upload
   const initialFile = location.state?.resumeFile || null;
@@ -107,6 +108,18 @@ export default function WorkspacePage() {
     }
   };
 
+  const handleRemoveFile = () => {
+    setFile(null);
+    setLocalError('');
+    setError(null);
+    setAnalysisResult(null);
+    setAnalyzing(false);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
   const triggerAnalysis = async () => {
     const finalRole = selectedRole || roleQuery.trim();
 
@@ -119,7 +132,7 @@ export default function WorkspacePage() {
     setProgressStep(0); // Start at parsing
 
     // Fake visual progress increments for a premium feel
-    const stepInterval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       setProgressStep(prev => {
         if (prev < 2) return prev + 1;
         return prev;
@@ -258,7 +271,10 @@ export default function WorkspacePage() {
         if (!file) {
           alert("Please upload a resume file.");
           setAnalyzing(false);
-          clearInterval(stepInterval);
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
           return;
         }
 
@@ -284,7 +300,10 @@ export default function WorkspacePage() {
         };
       }
 
-      clearInterval(stepInterval);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       setProgressStep(3); // Complete
       setAnalysisResult(resultData);
       
@@ -297,7 +316,10 @@ export default function WorkspacePage() {
 
     } catch (err: any) {
       console.error(err);
-      clearInterval(stepInterval);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       setAnalyzing(false);
       const errMsg = err.response?.data?.error || "Failed to analyze resume. Please verify backend configurations.";
       setLocalError(errMsg);
@@ -523,18 +545,27 @@ export default function WorkspacePage() {
                 </h3>
                 
                 {file ? (
-                  <div className="flex items-center gap-md p-md bg-surface-container-lowest border border-outline-variant/20 rounded-lg">
-                    <span className="material-symbols-outlined text-[36px] text-primary">
-                      description
-                    </span>
-                    <div className="overflow-hidden">
-                      <p className="font-label-md text-label-md text-on-surface truncate font-bold">
-                        {file.name}
-                      </p>
-                      <p className="font-label-sm text-label-sm text-on-surface-variant mt-xs">
-                        {(file.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
+                  <div className="flex items-center justify-between gap-md p-md bg-surface-container-lowest border border-outline-variant/20 rounded-lg relative group">
+                    <div className="flex items-center gap-md overflow-hidden">
+                      <span className="material-symbols-outlined text-[36px] text-primary">
+                        description
+                      </span>
+                      <div className="overflow-hidden">
+                        <p className="font-label-md text-label-md text-on-surface truncate font-bold">
+                          {file.name}
+                        </p>
+                        <p className="font-label-sm text-label-sm text-on-surface-variant mt-xs">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
                     </div>
+                    <button
+                      onClick={handleRemoveFile}
+                      className="p-xs rounded-full hover:bg-red-500/10 text-on-surface-variant hover:text-red-500 transition-colors cursor-pointer shrink-0"
+                      title="Remove file"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">close</span>
+                    </button>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center p-lg border border-dashed border-outline-variant/50 rounded-lg bg-surface-container-lowest text-center">
