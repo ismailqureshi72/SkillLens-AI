@@ -49,9 +49,23 @@ export default function JobsPage() {
   const [sortBy, setSortBy] = useState<'matchDesc' | 'matchAsc' | 'company' | 'title'>('matchDesc');
 
   // Reset results on mount to prevent persistence after page refresh
+  // Auto-fetch matching jobs if there is an active analysis result
   useEffect(() => {
-    setMatchedJobs([]);
-    setHasSearched(false);
+    if (analysisResult) {
+      let skills = analysisResult.extractedSkills;
+      if (typeof skills === 'string') {
+        try {
+          skills = JSON.parse(skills);
+        } catch (e) {
+          skills = [];
+        }
+      }
+      fetchMatchedJobs(skills || [], analysisResult.jobRole || '', initialFilters);
+      setHasSearched(true);
+    } else {
+      setMatchedJobs([]);
+      setHasSearched(false);
+    }
   }, []);
 
   // Sync state with URL search params when they change (e.g. on navigation back/forward)
