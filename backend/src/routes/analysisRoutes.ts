@@ -3,10 +3,16 @@ import { AnalysisController } from '../controllers/AnalysisController.js';
 import { JobController } from '../controllers/JobController.js';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 
 const router = Router();
 const analysisController = new AnalysisController();
 const jobController = new JobController();
+
+// Ensure uploads directory exists on startup
+if (!fs.existsSync('uploads')) {
+  fs.mkdirSync('uploads', { recursive: true });
+}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
