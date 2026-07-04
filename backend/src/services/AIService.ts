@@ -29,31 +29,49 @@ export class AIService {
    */
   async analyzeResume(resumeText: string, jobRole: string): Promise<AnalysisResponse> {
     const prompt = `
-      You are an expert career coach and professional recruiter for the selected industry.
-      Analyze the following resume text for the target job role: "${jobRole}".
+      You are an expert career strategist, senior recruiter, and domain expert in the target field.
+      Your task is to conduct a highly detailed, professional, and industry-grade semantic analysis of the provided resume text against the target job role: "${jobRole}".
 
       Resume Text:
       ---
       ${resumeText}
       ---
 
-      Please provide a detailed analysis in the following JSON format:
+      Please evaluate the candidate's alignment with target industry standards for the role "${jobRole}" and output a valid JSON containing:
+      
+      1. "extracted_skills": A comprehensive list of specific skills, methodologies, frameworks, programming languages, libraries, platforms, or domain expertise found in the resume. Extract actual granular skills rather than generic concepts.
+      
+      2. "required_skills": The core skills, certifications, tools, and methodologies expected for a competitive candidate in the target role "${jobRole}" at its typical seniority level. Avoid generic lists. Tailor the required skills directly to "${jobRole}" (e.g., if it is a medical/nutritionist/healthcare role, focus on healthcare protocols, client assessment, clinical dietetics; if it is marketing, focus on SEO, digital ads, web analytics, copywriting; if it is engineering, focus on structural design, physics, CAD tools).
+      
+      3. "missing_skills": The crucial skills that are required for "${jobRole}" but are completely absent or insufficient in the candidate's resume.
+      
+      4. "match_percentage": A placeholder percentage (an integer between 0 and 100) representing initial alignment. Note: This will be calibrated programmatically.
+      
+      5. "roadmap": A sequenced, practical 3-step upskilling trajectory to bridge the missing skills gap.
+         Each step must include:
+         - "step": A concise title (e.g., "Phase 1: Master Nutrition Assessment Protocols" or "Phase 1: Deepen TypeScript & State Management").
+         - "description": A highly structured, actionable paragraph explaining exactly what the candidate needs to learn, why it is critical for the target role, and what specific project they should build to practice.
+         - "resources": 2-3 specific, reputable learning resources, course names, textbooks, or official certification names (e.g., "Coursera: Dietetics and Nutrition Specialization", "Official React Documentation", "AWS Certified Solutions Architect"). Avoid generic search queries.
+
+      JSON Schema:
       {
         "extracted_skills": ["skill1", "skill2", ...],
         "required_skills": ["skillA", "skillB", ...],
         "missing_skills": ["skillC", "skillD", ...],
-        "match_percentage": 85,
+        "match_percentage": 75,
         "roadmap": [
           {
-            "step": "Step Name",
-            "description": "Detailed learning path",
-            "resources": ["Course link or tool name", ...]
+            "step": "Phase 1: ...",
+            "description": "...",
+            "resources": ["...", "..."]
           }
         ]
       }
 
-      Ensure that "missing_skills" are skills present in "required_skills" but not in "extracted_skills".
-      The "roadmap" should specifically address the "missing_skills".
+      Strict Guidelines:
+      - All JSON keys must match the schema exactly.
+      - Ensure the analysis is tailored explicitly to the target role "${jobRole}".
+      - The upskilling roadmap must directly address the identified missing skills.
     `;
 
     const response = await openai.chat.completions.create({

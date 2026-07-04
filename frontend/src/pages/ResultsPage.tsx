@@ -146,43 +146,6 @@ export default function ResultsPage() {
 
         {/* Dashboard Top Row: Score Circular Chart + Summary Message */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter items-stretch">
-          {/* Circular Gauge Card */}
-          <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl shadow-sm flex flex-col items-center justify-center text-center">
-            <h3 className="font-headline-sm text-headline-sm text-on-surface mb-lg">Match Score</h3>
-            
-            <div className="w-48 h-48 relative">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    innerRadius={65}
-                    outerRadius={85}
-                    paddingAngle={3}
-                    dataKey="value"
-                    stroke="none"
-                    startAngle={90}
-                    endAngle={-270}
-                  >
-                    <Cell fill={MATCH_COLOR} />
-                    <Cell fill={GAP_COLOR} />
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-4xl font-black text-on-surface tracking-tight">
-                  {matchPercentage}%
-                </span>
-                <span className="font-label-sm text-label-sm text-on-surface-variant mt-xs">
-                  Match
-                </span>
-              </div>
-            </div>
-
-            <p className="font-body-sm text-body-sm text-on-surface-variant mt-lg max-w-[220px]">
-              Your background aligns with {matchPercentage}% of key role competencies.
-            </p>
-          </div>
-
           {/* Core Alignment Info Box */}
           <div className="lg:col-span-2 bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl shadow-sm flex flex-col justify-between">
             <div className="flex flex-col gap-md">
@@ -222,6 +185,43 @@ export default function ResultsPage() {
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* Circular Gauge Card */}
+          <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl shadow-sm flex flex-col items-center justify-center text-center">
+            <h3 className="font-headline-sm text-headline-sm text-on-surface mb-lg">Match Score</h3>
+            
+            <div className="w-48 h-48 relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    innerRadius={65}
+                    outerRadius={85}
+                    paddingAngle={3}
+                    dataKey="value"
+                    stroke="none"
+                    startAngle={90}
+                    endAngle={-270}
+                  >
+                    <Cell fill={MATCH_COLOR} />
+                    <Cell fill={GAP_COLOR} />
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-4xl font-black text-on-surface tracking-tight">
+                  {matchPercentage}%
+                </span>
+                <span className="font-label-sm text-label-sm text-on-surface-variant mt-xs">
+                  Match
+                </span>
+              </div>
+            </div>
+
+            <p className="font-body-sm text-body-sm text-on-surface-variant mt-lg max-w-[220px]">
+              Your background aligns with {matchPercentage}% of key role competencies.
+            </p>
           </div>
         </div>
 

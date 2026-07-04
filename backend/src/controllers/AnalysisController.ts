@@ -412,8 +412,8 @@ function hasForbiddenKeywords(text: string): boolean {
     /dear candidate/i,
     /we are pleased to offer/i,
     /terms and conditions/i,
-    /agreement/i,
-    /contract/i
+    /onboarding packet/i,
+    /sign and return/i
   ];
   return forbiddenList.some(regex => regex.test(text));
 }
