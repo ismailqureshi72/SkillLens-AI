@@ -93,17 +93,22 @@ export default function SupportPage() {
             <h2 className="font-headline-sm text-headline-sm text-on-surface">Submit a Support Ticket</h2>
             
             {submitted ? (
-              <div className="p-md bg-green-500/5 border border-green-500/20 rounded-lg text-on-surface flex flex-col items-center gap-sm text-center py-xl">
-                <span className="material-symbols-outlined text-green-600 text-[40px]">check_circle</span>
-                <h3 className="font-bold text-headline-sm text-on-surface">Ticket Received</h3>
-                <p className="font-body-sm text-body-sm text-on-surface-variant max-w-xs">
-                  Thank you! Our support crew has received your ticket and will respond within 24 hours.
+              <div className="flex flex-col items-center justify-center text-center p-xl bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-md gap-md py-16">
+                <div className="h-16 w-16 rounded-full bg-green-500/10 dark:bg-green-500/20 text-green-600 dark:text-green-400 flex items-center justify-center shadow-inner">
+                  <span className="material-symbols-outlined text-[36px]">check_circle</span>
+                </div>
+                <h3 className="font-headline-sm text-headline-sm text-on-surface font-extrabold tracking-tight">
+                  Ticket Received Successfully
+                </h3>
+                <p className="font-body-md text-body-md text-on-surface-variant max-w-sm leading-relaxed">
+                  Thank you! Our support team has received your ticket and will respond to your email address within 24 hours.
                 </p>
                 <button
                   onClick={() => setSubmitted(false)}
-                  className="mt-sm text-primary font-label-md text-label-md hover:underline"
+                  className="mt-md bg-primary/10 hover:bg-primary/20 text-primary font-label-md text-label-md px-lg py-md rounded-lg active:scale-95 transition-all inline-flex items-center gap-sm"
                 >
-                  Submit another message
+                  <span className="material-symbols-outlined text-[18px]">add_circle</span>
+                  Submit Another Ticket
                 </button>
               </div>
             ) : (
