@@ -1,26 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { COMPANY_DATASET } from '../data/companies';
 import CompanyCard from './CompanyCard';
 
-export default function CompanySection() {
+interface CompanySectionProps {
+  selectedMarket: string;
+}
+
+export default function CompanySection({ selectedMarket }: CompanySectionProps) {
   const [roleFilter, setRoleFilter] = useState('All');
   const [levelFilter, setLevelFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
 
-  // Derive unique roles from the dataset for the filter dropdown
-  const rolesList = ['All', 'Backend Developer', 'Frontend Developer', 'Full Stack Developer', 'Data Engineer', 'QA Engineer', 'DevOps Engineer', 'Mobile Developer'];
-  const levelsList = ['All', 'Intern', 'Junior', 'Mid', 'Senior'];
-  const typesList = ['All', 'Remote', 'On-site', 'Hybrid'];
+  // Reset filters when the category changes to prevent stale filters returning empty arrays
+  useEffect(() => {
+    setRoleFilter('All');
+    setLevelFilter('All');
+    setTypeFilter('All');
+  }, [selectedMarket]);
 
-  // Filter logic
-  const filteredCompanies = COMPANY_DATASET.filter(company => {
+  // Filter companies belonging to the selected market category
+  const categoryCompanies = COMPANY_DATASET.filter(company => {
+    if (selectedMarket === 'All' || selectedMarket === 'Custom') return true;
+    return company.category === selectedMarket;
+  });
+
+  // Derive unique filter options dynamically from the category-specific dataset
+  const rolesList = ['All', ...Array.from(new Set(categoryCompanies.flatMap(c => c.roles)))];
+  const levelsList = ['All', ...Array.from(new Set(categoryCompanies.flatMap(c => c.level)))];
+  const typesList = ['All', ...Array.from(new Set(categoryCompanies.map(c => c.type)))];
+
+  // Apply user-selected filters
+  const filteredCompanies = categoryCompanies.filter(company => {
     const matchesRole = roleFilter === 'All' || company.roles.includes(roleFilter);
     const matchesLevel = levelFilter === 'All' || company.level.includes(levelFilter);
     const matchesType = typeFilter === 'All' || company.type === typeFilter;
     return matchesRole && matchesLevel && matchesType;
   });
 
-  // Fresh Graduate Friendly Companies (filtered where freshers is true)
+  // Fresh Graduate Friendly Companies
   const freshersFriendlyCompanies = filteredCompanies.filter(c => c.freshers);
 
   return (

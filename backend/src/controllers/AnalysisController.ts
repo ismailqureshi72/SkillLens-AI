@@ -48,15 +48,27 @@ export class AnalysisController {
       // 3. AI Analysis
       const analysisResult = await ai.analyzeResume(resumeText, jobRole);
 
-      // 3. Save to database
+      // Calculate match percentage deterministically in code to prevent LLM hallucinations
+      const extractedSkills = analysisResult.extracted_skills || [];
+      const requiredSkills = analysisResult.required_skills || [];
+      const missingSkills = analysisResult.missing_skills || [];
+
+      let matchPercentage = 0;
+      if (requiredSkills.length > 0) {
+        const matchedSkillsCount = requiredSkills.length - missingSkills.length;
+        matchPercentage = Math.round((matchedSkillsCount / requiredSkills.length) * 100);
+      }
+      matchPercentage = Math.max(0, Math.min(100, matchPercentage));
+
+      // 4. Save to database
       const savedAnalysis = await prisma.analysis.create({
         data: {
           resumeText,
           jobRole,
-          extractedSkills: JSON.stringify(analysisResult.extracted_skills),
-          requiredSkills: JSON.stringify(analysisResult.required_skills),
-          missingSkills: JSON.stringify(analysisResult.missing_skills),
-          matchPercentage: analysisResult.match_percentage,
+          extractedSkills: JSON.stringify(extractedSkills),
+          requiredSkills: JSON.stringify(requiredSkills),
+          missingSkills: JSON.stringify(missingSkills),
+          matchPercentage: matchPercentage,
           roadmap: JSON.stringify(analysisResult.roadmap),
           userId: (req as any).user?.id || null,
         },
@@ -69,9 +81,10 @@ export class AnalysisController {
 
       return res.json({
         ...savedAnalysis,
-        extractedSkills: analysisResult.extracted_skills,
-        requiredSkills: analysisResult.required_skills,
-        missingSkills: analysisResult.missing_skills,
+        matchPercentage,
+        extractedSkills,
+        requiredSkills,
+        missingSkills,
         roadmap: analysisResult.roadmap,
       });
     } catch (error: any) {

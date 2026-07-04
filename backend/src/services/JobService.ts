@@ -169,13 +169,40 @@ const MOCK_JOBS: Job[] = [
     description: 'Administer onboarding protocols, maintain compliance with HR policies, and manage employee relations structures.',
     requiredSkills: ['Employee Relations', 'HR Policies', 'Payroll Administration', 'Onboarding', 'Recruiting'],
     applyLink: 'https://fatima-group.com/careers'
+  },
+  {
+    id: 'job-17',
+    title: 'Clinical Nutritionist',
+    company: 'Shifa International Hospital',
+    location: 'Islamabad, Pakistan',
+    description: 'Design personalized diet plans, evaluate patient nutritional status, and consult patients on wellness and medical nutrition therapy.',
+    requiredSkills: ['Nutrition Therapy', 'Diet Planning', 'Clinical Assessment', 'Patient Consulting', 'Wellness Coaching'],
+    applyLink: 'https://www.shifa.com.pk/careers'
+  },
+  {
+    id: 'job-18',
+    title: 'Dental Surgeon',
+    company: 'Aga Khan University Hospital',
+    location: 'Karachi, Pakistan',
+    description: 'Perform standard dental procedures, conduct oral health checkups, and educate patients on preventative oral hygiene.',
+    requiredSkills: ['Dentistry', 'Oral Surgery', 'Clinical Assessment', 'Patient Care', 'Diagnosis'],
+    applyLink: 'https://www.aku.edu/careers'
+  },
+  {
+    id: 'job-19',
+    title: 'Senior Content Writer',
+    company: 'Creative Chaos',
+    location: 'Karachi, Pakistan',
+    description: 'Author high-quality articles, optimize marketing content for search engines, and manage company copywriting deliverables.',
+    requiredSkills: ['SEO Writing', 'Copywriting', 'Content Strategy', 'Proofreading', 'Creative Writing'],
+    applyLink: 'https://www.creativechaos.co/careers'
   }
 ];
 
 const getRoleCategory = (title: string): string => {
   const t = title.toLowerCase();
   
-  if (t.includes('nurse') || t.includes('doctor') || t.includes('pharmacist') || t.includes('clinical') || t.includes('medical') || t.includes('surgeon')) {
+  if (t.includes('nurse') || t.includes('doctor') || t.includes('pharmacist') || t.includes('clinical') || t.includes('medical') || t.includes('surgeon') || t.includes('nutrition') || t.includes('diet')) {
     return 'Healthcare & Medical';
   }
   if (t.includes('finance') || t.includes('analyst') || t.includes('accountant') || t.includes('auditor') || t.includes('tax') || t.includes('banker') || t.includes('brand manager')) {
@@ -190,7 +217,7 @@ const getRoleCategory = (title: string): string => {
   if (t.includes('lawyer') || t.includes('paralegal') || t.includes('legal') || t.includes('compliance') || t.includes('contract')) {
     return 'Legal';
   }
-  if (t.includes('supply') || t.includes('logistics') || t.includes('inventory') || t.includes('support') || t.includes('operations') || t.includes('customer') || t.includes('hr ') || t.includes('human resources')) {
+  if (t.includes('supply') || t.includes('logistics') || t.includes('inventory') || t.includes('support') || t.includes('operations') || t.includes('customer') || t.includes('hr ') || t.includes('human resources') || t.includes('writer') || t.includes('content')) {
     return 'Operations & Support';
   }
   if (t.includes('designer') || t.includes('design') || t.includes('graphic') || t.includes('creative') || t.includes('art') || t.includes('ui/') || t.includes('ux') || t.includes(' ui') || t.includes('ux ')) {
@@ -271,6 +298,16 @@ export class JobService {
         matchLevel
       };
     });
+
+    // Filter by targetRole category if specified to keep suggestions highly relevant
+    if (targetRole && targetRole.trim() !== '') {
+      const targetCat = getRoleCategory(targetRole);
+      // Filter out unrelated categories if we have jobs matching the target category
+      const categoryJobs = jobs.filter(j => getRoleCategory(j.title) === targetCat);
+      if (categoryJobs.length > 0) {
+        jobs = categoryJobs;
+      }
+    }
 
     // Apply Backend Filters if provided
     if (filters) {

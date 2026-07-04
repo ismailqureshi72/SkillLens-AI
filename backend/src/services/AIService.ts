@@ -63,6 +63,7 @@ export class AIService {
         { role: 'user', content: prompt },
       ],
       response_format: { type: 'json_object' },
+      temperature: 0,
     });
 
     const result = response.choices[0]?.message?.content;

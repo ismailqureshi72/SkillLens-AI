@@ -103,5 +103,43 @@ export const MARKET_TRENDS_DATASET: Record<string, MarketTrend> = {
     salaryMax: 300000,
     hiringCompanies: ['VentureDive', 'SadaPay', 'Systems Limited', '10Pearls', 'Arbisoft'],
     jobAvailability: "Growing demand for UI/UX product designers and interactive graphic specialists."
+  },
+  "Healthcare": {
+    marketDemand: [
+      { name: 'Patient Care & Nursing', value: 90 },
+      { name: 'Clinical Assessments', value: 85 },
+      { name: 'Nutrition Therapy & Diet', value: 78 },
+      { name: 'Emergency Care / CPR', value: 80 }
+    ],
+    trendingTech: [
+      { name: 'Digital Health Records (EHR)', growth: '+45%', level: 'High' },
+      { name: 'Telemedicine Systems', growth: '+50%', level: 'High' },
+      { name: 'Medication Administration', growth: '+30%', level: 'Medium' },
+      { name: 'Diagnostic Imaging Tools', growth: '+25%', level: 'Medium' }
+    ],
+    salaryMin: 50000,
+    salaryMedian: 120000,
+    salaryMax: 280000,
+    hiringCompanies: ['Shaukat Khanum Memorial Hospital', 'Aga Khan University Hospital', 'Shifa International Hospital', 'Indus Hospital Network', 'Chughtai Lab'],
+    jobAvailability: "Steady hiring for registered nurses, nutritionists, and clinical coordinators across major cities."
+  },
+  "Traditional Engineering": {
+    marketDemand: [
+      { name: 'CAD Modeling & SolidWorks', value: 88 },
+      { name: 'Plant Operations & PLC', value: 82 },
+      { name: 'Safety & Quality Compliance', value: 85 },
+      { name: 'Industrial Maintenance', value: 78 }
+    ],
+    trendingTech: [
+      { name: 'AutoCAD / Simulation (ANSYS)', growth: '+38%', level: 'High' },
+      { name: 'SAP Plant Maintenance (PM)', growth: '+45%', level: 'High' },
+      { name: 'Industrial Automation (PLC)', growth: '+55%', level: 'Critical' },
+      { name: 'Safety Audit Protocols', growth: '+28%', level: 'Medium' }
+    ],
+    salaryMin: 60000,
+    salaryMedian: 140000,
+    salaryMax: 320000,
+    hiringCompanies: ['Engro Corporation', 'Fauji Fertilizer Company (FFC)', 'Lucky Cement', 'Hubco (Hub Power Company)', 'DESCON Engineering'],
+    jobAvailability: "Active hiring for mechanical, electrical, and process safety engineers in industrial clusters."
   }
 };

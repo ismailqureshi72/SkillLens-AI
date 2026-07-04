@@ -19,6 +19,23 @@ export default function TrendsPage() {
   // Suggest closest category helper
   const getClosestCategory = (input: string): string => {
     const normalized = input.toLowerCase();
+
+    // Check for healthcare/medical
+    if (
+      normalized.includes('health') ||
+      normalized.includes('medical') ||
+      normalized.includes('nurse') ||
+      normalized.includes('doctor') ||
+      normalized.includes('clinic') ||
+      normalized.includes('nutrition') ||
+      normalized.includes('hospital') ||
+      normalized.includes('dent') ||
+      normalized.includes('diet')
+    ) {
+      return 'Healthcare';
+    }
+
+    // Check for technology & computer science (check this before general engineering)
     if (
       normalized.includes('tech') ||
       normalized.includes('code') ||
@@ -28,10 +45,26 @@ export default function TrendsPage() {
       normalized.includes('program') ||
       normalized.includes('computer') ||
       normalized.includes('web') ||
-      normalized.includes('engineer')
+      normalized.includes('developer')
     ) {
       return 'Computer Science';
     }
+
+    // Check for traditional engineering (mechanical, civil, etc.)
+    if (
+      normalized.includes('machin') ||
+      normalized.includes('mechanic') ||
+      normalized.includes('civil') ||
+      normalized.includes('electric') ||
+      normalized.includes('manufactur') ||
+      normalized.includes('engineer') ||
+      normalized.includes('chemical') ||
+      normalized.includes('industrial')
+    ) {
+      return 'Traditional Engineering';
+    }
+
+    // Check for marketing
     if (
       normalized.includes('market') ||
       normalized.includes('seo') ||
@@ -42,6 +75,8 @@ export default function TrendsPage() {
     ) {
       return 'Marketing';
     }
+
+    // Check for finance
     if (
       normalized.includes('financ') ||
       normalized.includes('account') ||
@@ -52,6 +87,8 @@ export default function TrendsPage() {
     ) {
       return 'Finance';
     }
+
+    // Check for design
     if (
       normalized.includes('design') ||
       normalized.includes('ux') ||
@@ -62,6 +99,8 @@ export default function TrendsPage() {
     ) {
       return 'Design';
     }
+
+    // Check for business/management
     if (
       normalized.includes('business') ||
       normalized.includes('manage') ||
@@ -72,37 +111,49 @@ export default function TrendsPage() {
     ) {
       return 'Business / Management';
     }
-    return 'Computer Science'; // Fallback
+
+    return ''; // Return empty string if no close match is found
   };
 
-  // Generate dynamic stats for custom input
+  // Generate dynamic stats for custom input when no standardized category matches
   const getCustomMarketData = (input: string): MarketTrend => {
     const cleaned = input.trim() || 'Custom Field';
     return {
       marketDemand: [
         { name: 'Core Skillset', value: 85 },
-        { name: 'Strategy & Planning', value: 75 },
-        { name: 'Tools Proficiency', value: 80 },
-        { name: 'Collaboration', value: 70 }
+        { name: 'Strategic Execution', value: 75 },
+        { name: 'Process & Tools', value: 80 },
+        { name: 'Collaboration & Leadership', value: 75 }
       ],
       trendingTech: [
-        { name: `${cleaned} Frameworks`, growth: '+35%', level: 'High' },
-        { name: 'Analytics Dashboards', growth: '+28%', level: 'Medium' },
-        { name: 'AI Assist Utilities', growth: '+54%', level: 'Critical' },
-        { name: 'Collaboration Platforms', growth: '+40%', level: 'High' }
+        { name: `${cleaned} Techniques`, growth: '+35%', level: 'High' },
+        { name: 'Analytical Dashboards', growth: '+28%', level: 'Medium' },
+        { name: 'AI Productivity Utilities', growth: '+45%', level: 'High' },
+        { name: 'Industry Best Practices', growth: '+40%', level: 'High' }
       ],
-      salaryMin: 70000,
-      salaryMedian: 160000,
-      salaryMax: 320000,
-      hiringCompanies: ['Systems Limited', 'Arbisoft', '10Pearls', 'VentureDive', 'Bazaar Technologies'],
-      jobAvailability: `Growing demand for specialized ${cleaned} expertise in Lahore, Karachi, and Islamabad.`
+      salaryMin: 50000,
+      salaryMedian: 120000,
+      salaryMax: 280000,
+      hiringCompanies: ['National Enterprises', 'Leading Corporates', 'Growth Startups'],
+      jobAvailability: `Growing demand for specialized ${cleaned} expertise in Pakistan's primary markets.`
     };
   };
 
   // Sync active data when selectedMarket or customMarket changes
   useEffect(() => {
     if (selectedMarket === "Custom") {
-      setActiveData(getCustomMarketData(customMarket));
+      const closest = getClosestCategory(customMarket);
+      if (closest && MARKET_TRENDS_DATASET[closest]) {
+        // Automatically load and adapt the closest standardized dataset (salaries, companies, skills)
+        const baseData = MARKET_TRENDS_DATASET[closest];
+        setActiveData({
+          ...baseData,
+          jobAvailability: `Growing demand for specialized ${customMarket} expertise in Lahore, Karachi, and Islamabad.`
+        });
+      } else {
+        // Fall back to a generic professional template if no closest category matches
+        setActiveData(getCustomMarketData(customMarket));
+      }
     } else {
       setActiveData(MARKET_TRENDS_DATASET[selectedMarket]);
     }
@@ -164,6 +215,8 @@ export default function TrendsPage() {
               <option value="Marketing">Marketing</option>
               <option value="Finance">Finance</option>
               <option value="Design">Design</option>
+              <option value="Healthcare">Healthcare</option>
+              <option value="Traditional Engineering">Traditional Engineering</option>
               <option value="Custom">Custom (user input)</option>
             </select>
           </div>
@@ -379,7 +432,7 @@ export default function TrendsPage() {
         </div>
 
         {/* Localized Company Intelligence Section */}
-        <CompanySection />
+        <CompanySection selectedMarket={selectedMarket === 'Custom' && customMarket.trim() ? getClosestCategory(customMarket) || 'All' : selectedMarket} />
       </section>
     </main>
   );
