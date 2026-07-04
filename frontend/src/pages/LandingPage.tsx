@@ -59,7 +59,7 @@ export default function LandingPage() {
   return (
     <main className="flex-grow pt-24 pb-xl transition-colors duration-200">
       {/* Hero & Upload Dropzone Section */}
-      <section className="max-w-max-width mx-auto px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-gutter items-center min-h-[716px]">
+      <section className="max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-gutter items-center min-h-[716px]">
         {/* Left Column: Copywriting CTAs */}
         <div className="flex flex-col gap-lg pr-lg">
           <div className="inline-flex items-center gap-sm bg-surface-container px-sm py-xs rounded-full w-fit border border-outline-variant/30">
@@ -137,7 +137,7 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works Section */}
-      <section className="max-w-max-width mx-auto px-margin-desktop py-xl mt-xl">
+      <section className="max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop py-xl mt-xl">
         <div className="text-center mb-xl flex flex-col items-center">
           <h2 className="font-headline-lg text-headline-lg text-on-surface mb-sm">How It Works</h2>
           <p className="font-body-md text-body-md text-on-surface-variant max-w-[600px]">

@@ -5,7 +5,7 @@ export default function ApiDocsPage() {
 
   return (
     <main className="flex-grow pt-24 pb-xl transition-colors duration-200">
-      <section className="max-w-4xl mx-auto px-margin-desktop flex flex-col gap-lg">
+      <section className="max-w-4xl mx-auto px-margin-mobile md:px-margin-desktop flex flex-col gap-lg">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center gap-sm">
           <button

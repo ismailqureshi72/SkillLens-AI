@@ -1,14 +1,114 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useApp } from '../context/AppContext';
 import CompanySection from '../components/CompanySection';
 import { MARKET_TRENDS_DATASET } from '../data/marketTrendsData';
 import type { MarketTrend } from '../data/marketTrendsData';
 
+// Suggest closest category helper (hoisted outside component)
+const getClosestCategory = (input: string): string => {
+  const normalized = input.toLowerCase();
+
+  // Check for healthcare/medical
+  if (
+    normalized.includes('health') ||
+    normalized.includes('medical') ||
+    normalized.includes('nurse') ||
+    normalized.includes('doctor') ||
+    normalized.includes('clinic') ||
+    normalized.includes('nutrition') ||
+    normalized.includes('hospital') ||
+    normalized.includes('dent') ||
+    normalized.includes('diet')
+  ) {
+    return 'Healthcare';
+  }
+
+  // Check for technology & computer science (check this before general engineering)
+  if (
+    normalized.includes('tech') ||
+    normalized.includes('code') ||
+    normalized.includes('software') ||
+    normalized.includes('develop') ||
+    normalized.includes('react') ||
+    normalized.includes('program') ||
+    normalized.includes('computer') ||
+    normalized.includes('web') ||
+    normalized.includes('developer')
+  ) {
+    return 'Computer Science';
+  }
+
+  // Check for traditional engineering (mechanical, civil, etc.)
+  if (
+    normalized.includes('machin') ||
+    normalized.includes('mechanic') ||
+    normalized.includes('civil') ||
+    normalized.includes('electric') ||
+    normalized.includes('manufactur') ||
+    normalized.includes('engineer') ||
+    normalized.includes('chemical') ||
+    normalized.includes('industrial')
+  ) {
+    return 'Traditional Engineering';
+  }
+
+  // Check for marketing
+  if (
+    normalized.includes('market') ||
+    normalized.includes('seo') ||
+    normalized.includes('ad ') ||
+    normalized.includes('sales') ||
+    normalized.includes('growth') ||
+    normalized.includes('social media')
+  ) {
+    return 'Marketing';
+  }
+
+  // Check for finance
+  if (
+    normalized.includes('financ') ||
+    normalized.includes('account') ||
+    normalized.includes('audit') ||
+    normalized.includes('tax') ||
+    normalized.includes('bank') ||
+    normalized.includes('money')
+  ) {
+    return 'Finance';
+  }
+
+  // Check for design
+  if (
+    normalized.includes('design') ||
+    normalized.includes('ux') ||
+    normalized.includes('ui') ||
+    normalized.includes('figma') ||
+    normalized.includes('art') ||
+    normalized.includes('creative')
+  ) {
+    return 'Design';
+  }
+
+  // Check for business/management
+  if (
+    normalized.includes('business') ||
+    normalized.includes('manage') ||
+    normalized.includes('product') ||
+    normalized.includes('operation') ||
+    normalized.includes('hr ') ||
+    normalized.includes('recru')
+  ) {
+    return 'Business / Management';
+  }
+
+  return ''; // Return empty string if no close match is found
+};
+
 export default function TrendsPage() {
   const { theme } = useApp();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // State Management
   const [selectedMarket, setSelectedMarket] = useState("Computer Science");
@@ -16,104 +116,23 @@ export default function TrendsPage() {
   const [customMarket, setCustomMarket] = useState("");
   const [activeData, setActiveData] = useState<MarketTrend>(MARKET_TRENDS_DATASET["Computer Science"]);
 
-  // Suggest closest category helper
-  const getClosestCategory = (input: string): string => {
-    const normalized = input.toLowerCase();
-
-    // Check for healthcare/medical
-    if (
-      normalized.includes('health') ||
-      normalized.includes('medical') ||
-      normalized.includes('nurse') ||
-      normalized.includes('doctor') ||
-      normalized.includes('clinic') ||
-      normalized.includes('nutrition') ||
-      normalized.includes('hospital') ||
-      normalized.includes('dent') ||
-      normalized.includes('diet')
-    ) {
-      return 'Healthcare';
+  // Load initial role from query parameters (e.g. from results page view trends button)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const roleQuery = params.get('role') || params.get('search');
+    if (roleQuery) {
+      const decodedRole = decodeURIComponent(roleQuery);
+      const closest = getClosestCategory(decodedRole);
+      if (closest) {
+        setSelectedMarket(closest);
+      } else {
+        setSelectedMarket("Custom");
+        setCustomInput(decodedRole);
+        setCustomMarket(decodedRole);
+      }
     }
+  }, [location.search]);
 
-    // Check for technology & computer science (check this before general engineering)
-    if (
-      normalized.includes('tech') ||
-      normalized.includes('code') ||
-      normalized.includes('software') ||
-      normalized.includes('develop') ||
-      normalized.includes('react') ||
-      normalized.includes('program') ||
-      normalized.includes('computer') ||
-      normalized.includes('web') ||
-      normalized.includes('developer')
-    ) {
-      return 'Computer Science';
-    }
-
-    // Check for traditional engineering (mechanical, civil, etc.)
-    if (
-      normalized.includes('machin') ||
-      normalized.includes('mechanic') ||
-      normalized.includes('civil') ||
-      normalized.includes('electric') ||
-      normalized.includes('manufactur') ||
-      normalized.includes('engineer') ||
-      normalized.includes('chemical') ||
-      normalized.includes('industrial')
-    ) {
-      return 'Traditional Engineering';
-    }
-
-    // Check for marketing
-    if (
-      normalized.includes('market') ||
-      normalized.includes('seo') ||
-      normalized.includes('ad ') ||
-      normalized.includes('sales') ||
-      normalized.includes('growth') ||
-      normalized.includes('social media')
-    ) {
-      return 'Marketing';
-    }
-
-    // Check for finance
-    if (
-      normalized.includes('financ') ||
-      normalized.includes('account') ||
-      normalized.includes('audit') ||
-      normalized.includes('tax') ||
-      normalized.includes('bank') ||
-      normalized.includes('money')
-    ) {
-      return 'Finance';
-    }
-
-    // Check for design
-    if (
-      normalized.includes('design') ||
-      normalized.includes('ux') ||
-      normalized.includes('ui') ||
-      normalized.includes('figma') ||
-      normalized.includes('art') ||
-      normalized.includes('creative')
-    ) {
-      return 'Design';
-    }
-
-    // Check for business/management
-    if (
-      normalized.includes('business') ||
-      normalized.includes('manage') ||
-      normalized.includes('product') ||
-      normalized.includes('operation') ||
-      normalized.includes('hr ') ||
-      normalized.includes('recru')
-    ) {
-      return 'Business / Management';
-    }
-
-    return ''; // Return empty string if no close match is found
-  };
 
   // Generate dynamic stats for custom input when no standardized category matches
   const getCustomMarketData = (input: string): MarketTrend => {
@@ -168,7 +187,7 @@ export default function TrendsPage() {
 
   return (
     <main className="flex-grow pt-24 pb-xl transition-colors duration-200">
-      <section className="max-w-max-width mx-auto px-margin-desktop flex flex-col gap-xl">
+      <section className="max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop flex flex-col gap-xl">
         
         {/* Header Title Block */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-md border-b border-outline-variant/30 pb-lg">

@@ -30,7 +30,7 @@ export default function Navbar() {
 
   return (
     <header className="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 shadow-sm transition-colors duration-200">
-      <div className="flex justify-between items-center px-margin-desktop h-16 max-w-max-width mx-auto">
+      <div className="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 max-w-max-width mx-auto">
         {/* Brand Logo */}
         <Link 
           to="/" 
@@ -94,7 +94,7 @@ export default function Navbar() {
       {/* Mobile Drawer */}
       {mobileOpen && (
         <div className="md:hidden bg-surface border-t border-outline-variant/30 shadow-lg animate-in">
-          <nav className="flex flex-col px-margin-desktop py-md gap-xs">
+          <nav className="flex flex-col px-margin-mobile py-md gap-xs">
             {NAV_LINKS.map(link => (
               <NavLink
                 key={link.to}

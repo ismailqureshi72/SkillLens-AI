@@ -53,7 +53,7 @@ export default function ResultsPage() {
   if (!analysisResult) {
     return (
       <main className="flex-grow pt-24 pb-xl transition-colors duration-200">
-        <div className="max-w-max-width mx-auto px-margin-desktop text-center py-xl bg-surface-container-low border border-outline-variant/30 rounded-xl shadow-sm">
+        <div className="max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop text-center py-xl bg-surface-container-low border border-outline-variant/30 rounded-xl shadow-sm">
           <span className="material-symbols-outlined text-[64px] text-outline mb-md">
             analytics
           </span>
@@ -99,7 +99,7 @@ export default function ResultsPage() {
 
   const handleViewTrends = async () => {
     await fetchTrends(jobRole);
-    navigate('/trends');
+    navigate(`/trends?role=${encodeURIComponent(jobRole)}`);
   };
 
   // Helper to categorize skills (e.g. tools vs core skills)
@@ -113,7 +113,7 @@ export default function ResultsPage() {
 
   return (
     <main className="flex-grow pt-24 pb-xl transition-colors duration-200">
-      <section className="max-w-max-width mx-auto px-margin-desktop flex flex-col gap-xl">
+      <section className="max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop flex flex-col gap-xl">
         {/* Header Action Row */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-md border-b border-outline-variant/30 pb-lg">
           <div>

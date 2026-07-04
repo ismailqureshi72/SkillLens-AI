@@ -329,7 +329,7 @@ export default function WorkspacePage() {
 
   return (
     <main className="flex-grow pt-24 pb-xl transition-colors duration-200">
-      <div className="max-w-max-width mx-auto px-margin-desktop">
+      <div className="max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop">
         <h2 className="font-headline-lg text-headline-lg text-on-surface mb-lg">
           Analysis Workspace
         </h2>

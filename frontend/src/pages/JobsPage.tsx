@@ -230,7 +230,7 @@ export default function JobsPage() {
 
   return (
     <main className="flex-grow pt-24 pb-xl transition-colors duration-200">
-      <section className="max-w-max-width mx-auto px-margin-desktop flex flex-col gap-xl">
+      <section className="max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop flex flex-col gap-xl">
         {/* Header Title Block */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-md border-b border-outline-variant/30 pb-lg">
           <div>
