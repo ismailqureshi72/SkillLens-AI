@@ -321,7 +321,18 @@ export default function WorkspacePage() {
         intervalRef.current = null;
       }
       setAnalyzing(false);
-      const errMsg = err.response?.data?.error || "Failed to analyze resume. Please verify backend configurations.";
+      let errMsg = "Failed to analyze resume. Please try again.";
+      if (err.response?.data?.error) {
+        errMsg = err.response.data.error;
+      } else if (err.message && err.message.toLowerCase().includes("timeout")) {
+        errMsg = "Request timed out. The AI took too long to analyze. Please try again with a slightly shorter file or try once more.";
+      } else if (err.message && err.message.toLowerCase().includes("network error")) {
+        errMsg = "Network error. Please check your internet connection and ensure the backend service is running.";
+      } else if (err.response?.status === 504 || err.response?.status === 502) {
+        errMsg = "Gateway timeout or service temporarily unavailable. The AI server is busy. Please try again.";
+      } else if (err.message) {
+        errMsg = `Analysis failed: ${err.message}. Please try again.`;
+      }
       setLocalError(errMsg);
       setError(errMsg);
     }

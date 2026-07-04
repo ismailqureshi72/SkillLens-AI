@@ -75,7 +75,7 @@ export class AIService {
     `;
 
     let lastError: any = null;
-    const maxAttempts = 3;
+    const maxAttempts = 2;
     
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
@@ -109,7 +109,7 @@ export class AIService {
         console.warn(`[AIService] Analysis attempt ${attempt} failed: ${error.message || error}`);
         lastError = error;
         if (attempt < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 1500));
+          await new Promise(resolve => setTimeout(resolve, 800));
         }
       }
     }
