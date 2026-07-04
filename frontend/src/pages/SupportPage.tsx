@@ -93,7 +93,7 @@ export default function SupportPage() {
             <h2 className="font-headline-sm text-headline-sm text-on-surface">Submit a Support Ticket</h2>
             
             {submitted ? (
-              <div className="w-full flex flex-col items-center justify-center text-center p-xl bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-md gap-md py-16">
+              <div className="w-full flex-grow flex flex-col items-center justify-center text-center p-xl gap-md py-16">
                 <div className="h-16 w-16 rounded-full bg-green-500/10 dark:bg-green-500/20 text-green-600 dark:text-green-400 flex items-center justify-center shadow-inner">
                   <span className="material-symbols-outlined text-[36px]">check_circle</span>
                 </div>
