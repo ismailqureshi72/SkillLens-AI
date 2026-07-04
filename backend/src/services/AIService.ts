@@ -74,23 +74,47 @@ export class AIService {
       - The upskilling roadmap must directly address the identified missing skills.
     `;
 
-    const response = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4o',
-      messages: [
-        { role: 'system', content: 'You are a professional recruitment AI that outputs strictly valid JSON.' },
-        { role: 'user', content: prompt },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0,
-    });
+    let lastError: any = null;
+    const maxAttempts = 3;
+    
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const response = await openai.chat.completions.create({
+          model: process.env.OPENAI_MODEL || 'gpt-4o',
+          messages: [
+            { role: 'system', content: 'You are a professional recruitment AI that outputs strictly valid JSON.' },
+            { role: 'user', content: prompt },
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0,
+        });
 
-    const result = response.choices?.[0]?.message?.content;
-    if (!result) throw new Error('AI failed to generate a response.');
+        const result = response.choices?.[0]?.message?.content;
+        if (!result) {
+          throw new Error('AI returned empty completion content.');
+        }
 
-    // Clean up potential markdown code block wrappers (e.g. ```json ... ```) returned by the LLM
-    const cleanedResult = result.replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/, '$1').trim();
+        const cleanedResult = result.replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/, '$1').trim();
+        const parsed = JSON.parse(cleanedResult) as AnalysisResponse;
 
-    return JSON.parse(cleanedResult) as AnalysisResponse;
+        // Ensure keys exist and are arrays to prevent parsing crashes
+        if (!parsed.extracted_skills) parsed.extracted_skills = [];
+        if (!parsed.required_skills) parsed.required_skills = [];
+        if (!parsed.missing_skills) parsed.missing_skills = [];
+        if (!parsed.roadmap) parsed.roadmap = [];
+
+        return parsed;
+
+      } catch (error: any) {
+        console.warn(`[AIService] Analysis attempt ${attempt} failed: ${error.message || error}`);
+        lastError = error;
+        if (attempt < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+      }
+    }
+
+    throw new Error(`AI was unable to generate a response after ${maxAttempts} attempts. Details: ${lastError?.message || lastError}`);
   }
 
   /**

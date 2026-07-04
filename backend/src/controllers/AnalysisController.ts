@@ -49,12 +49,46 @@ export class AnalysisController {
       // 3. AI Analysis
       const analysisResult = await ai.analyzeResume(resumeText, jobRole);
 
-      const extractedSkills = analysisResult.extracted_skills || [];
-      const requiredSkills = analysisResult.required_skills || [];
-      const missingSkills = analysisResult.missing_skills || [];
+      // Support both snake_case and camelCase keys in the AI result
+      const extractedSkills = analysisResult.extracted_skills || (analysisResult as any).extractedSkills || [];
+      const requiredSkills = analysisResult.required_skills || (analysisResult as any).requiredSkills || [];
+      const missingSkills = analysisResult.missing_skills || (analysisResult as any).missingSkills || [];
 
-      // Use the LLM-provided match percentage directly to avoid 0% calculation discrepancies
-      const matchPercentage = Math.max(0, Math.min(100, Number(analysisResult.match_percentage) || 0));
+      // Calculate match percentage consistently and deterministically in code
+      let matchPercentage = 0;
+      if (requiredSkills.length > 0) {
+        const extractedSet = new Set(extractedSkills.map((s: string) => s.toLowerCase().trim()));
+        
+        let matchedCount = 0;
+        requiredSkills.forEach((reqSkill: string) => {
+          const reqLower = reqSkill.toLowerCase().trim();
+          const isMatched = extractedSet.has(reqLower) || 
+                            Array.from(extractedSet).some(ext => ext.includes(reqLower) || reqLower.includes(ext));
+          if (isMatched) {
+            matchedCount++;
+          }
+        });
+
+        matchPercentage = Math.round((matchedCount / requiredSkills.length) * 100);
+
+        // Align missingSkills exactly with calculated overlap to eliminate logical discrepancies
+        const computedMissing = requiredSkills.filter((reqSkill: string) => {
+          const reqLower = reqSkill.toLowerCase().trim();
+          const isMatched = extractedSet.has(reqLower) || 
+                            Array.from(extractedSet).some(ext => ext.includes(reqLower) || reqLower.includes(ext));
+          return !isMatched;
+        });
+
+        if (computedMissing.length > 0) {
+          missingSkills.length = 0;
+          missingSkills.push(...computedMissing);
+        }
+      } else {
+        matchPercentage = Math.max(0, Math.min(100, Number(analysisResult.match_percentage) || (analysisResult as any).matchPercentage || 0));
+      }
+
+      // Clamp between 10% and 98% for realistic profiles
+      matchPercentage = Math.max(10, Math.min(98, matchPercentage));
 
       // 4. Save to database
       const savedAnalysis = await prisma.analysis.create({

@@ -314,22 +314,29 @@ export default function ResultsPage() {
           </h3>
 
           <div className="flex flex-col gap-lg mt-md pl-sm relative">
-            {/* Horizontal Timeline Connector Bar */}
-            <div className="absolute left-[24px] top-4 bottom-4 w-[2px] bg-outline-variant/30 pointer-events-none" />
+            {/* Timeline Connector Bar: Hidden on mobile, visible on desktop */}
+            <div className="hidden md:block absolute left-[24px] top-4 bottom-4 w-[2px] bg-outline-variant/30 pointer-events-none" />
 
             {roadmap.map((item, index) => (
-              <div key={index} className="flex gap-lg items-start relative z-10">
-                {/* Timeline Circle */}
-                <div className="h-10 w-10 rounded-full bg-primary text-on-primary border-4 border-surface flex items-center justify-center flex-shrink-0 font-bold text-sm shadow-md">
+              <div key={index} className="flex flex-col md:flex-row gap-md md:gap-lg items-stretch md:items-start relative z-10">
+                {/* Timeline Circle: Hidden on mobile, visible on desktop */}
+                <div className="hidden md:flex h-10 w-10 rounded-full bg-primary text-on-primary border-4 border-surface items-center justify-center flex-shrink-0 font-bold text-sm shadow-md">
                   {index + 1}
                 </div>
                 
-                <div className="flex-grow bg-surface border border-outline-variant/20 rounded-xl p-lg flex flex-col gap-sm hover:border-primary/40 transition-colors duration-150">
-                  <h4 className="font-headline-sm text-[18px] text-on-surface font-bold">
-                    {item.step}
-                  </h4>
+                <div className="flex-grow bg-surface border border-outline-variant/20 rounded-xl p-md md:p-lg flex flex-col gap-sm hover:border-primary/40 transition-colors duration-150">
+                  {/* Step Header with Mobile step badge */}
+                  <div className="flex items-center gap-sm justify-between">
+                    <h4 className="font-headline-sm text-[16px] md:text-[18px] text-on-surface font-bold leading-tight">
+                      {item.step}
+                    </h4>
+                    {/* Badge only on mobile */}
+                    <span className="md:hidden font-mono-label text-[11px] font-bold text-primary bg-primary/10 px-md py-xs rounded-full flex-shrink-0">
+                      Step {index + 1}
+                    </span>
+                  </div>
                   
-                  <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
                     {item.description}
                   </p>
 
@@ -344,7 +351,7 @@ export default function ResultsPage() {
                           href={`https://www.google.com/search?q=${encodeURIComponent(res)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="font-mono-label text-[12px] text-primary bg-primary/5 hover:bg-primary/10 border border-primary/20 px-sm py-xs rounded transition-colors duration-150 inline-flex items-center gap-xs"
+                          className="font-mono-label text-[11px] md:text-[12px] text-primary bg-primary/5 hover:bg-primary/10 border border-primary/20 px-sm py-xs rounded transition-colors duration-150 inline-flex items-center gap-xs"
                         >
                           {res}
                           <span className="material-symbols-outlined text-[14px]">open_in_new</span>
