@@ -5,17 +5,8 @@ export default function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
   const [hidden, setHidden] = useState(true);
-  const [isTouch, setIsTouch] = useState(false);
 
   useEffect(() => {
-    const detectTouch = () => {
-      const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-      setIsTouch(hasTouch);
-    };
-    detectTouch();
-
-    if (isTouch) return;
-
     const cursor = cursorRef.current;
     const dot = dotRef.current;
     if (!cursor || !dot) return;
@@ -37,6 +28,10 @@ export default function CustomCursor() {
 
     const handleMouseEnter = () => {
       setHidden(false);
+    };
+
+    const handleTouchStart = () => {
+      setHidden(true);
     };
 
     const handleMouseOver = (e: MouseEvent) => {
@@ -68,6 +63,7 @@ export default function CustomCursor() {
     document.addEventListener('mouseleave', handleMouseLeave);
     document.addEventListener('mouseenter', handleMouseEnter);
     window.addEventListener('mouseover', handleMouseOver);
+    window.addEventListener('touchstart', handleTouchStart);
 
     let animationFrameId: number;
     const render = () => {
@@ -92,11 +88,12 @@ export default function CustomCursor() {
       document.removeEventListener('mouseleave', handleMouseLeave);
       document.removeEventListener('mouseenter', handleMouseEnter);
       window.removeEventListener('mouseover', handleMouseOver);
+      window.removeEventListener('touchstart', handleTouchStart);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isTouch]);
+  }, []);
 
-  if (isTouch || hidden) return null;
+  if (hidden) return null;
 
   return (
     <>
