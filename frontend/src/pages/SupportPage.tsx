@@ -93,14 +93,20 @@ export default function SupportPage() {
             <h2 className="font-headline-sm text-headline-sm text-on-surface">Submit a Support Ticket</h2>
             
             {submitted ? (
-              <div className="w-full flex-grow flex flex-col items-center justify-center text-center p-xl gap-md py-16">
+              <div 
+                style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}
+                className="flex-grow py-16 gap-md"
+              >
                 <div className="h-16 w-16 rounded-full bg-green-500/10 dark:bg-green-500/20 text-green-600 dark:text-green-400 flex items-center justify-center shadow-inner">
                   <span className="material-symbols-outlined text-[36px]">check_circle</span>
                 </div>
                 <h3 className="font-headline-sm text-headline-sm text-on-surface font-extrabold tracking-tight">
-                  Ticket Received Successfully
+                  Ticket Sent Successfully
                 </h3>
-                <p className="w-full max-w-md mx-auto font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                <p 
+                  style={{ width: '100%', maxWidth: '420px', margin: '0 auto', display: 'block', alignSelf: 'stretch' }}
+                  className="font-body-md text-body-md text-on-surface-variant leading-relaxed"
+                >
                   Thank you! Our support team has received your ticket and will respond to your email address within 24 hours.
                 </p>
                 <button
