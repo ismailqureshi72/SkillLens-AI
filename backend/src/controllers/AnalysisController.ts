@@ -64,13 +64,34 @@ export class AnalysisController {
       // Calculate match percentage consistently and deterministically in code
       let matchPercentage = 65; // default fallback
       if (requiredSkills.length > 0) {
-        const extractedSet = new Set(extractedSkills.map(s => s.toLowerCase().trim()));
-        
+        // Tokenize strings into lists of clean lowercase words
+        const getKeywords = (skills: string[]): Set<string> => {
+          const words = new Set<string>();
+          const stopWords = new Set(['and', 'or', 'for', 'with', 'the', 'of', 'in', 'by', 'an', 'to', 'at', 'on', 'a', 'best', 'practices', 'level', 'implied', 'portfolio', 'link', 'using', 'based', 'core', 'strong']);
+          
+          skills.forEach(skill => {
+            const parts = skill.toLowerCase()
+              .replace(/[()\[\].,\/#!$%\^&\*;:{}=\-_`~?]/g, ' ')
+              .split(/\s+/);
+            
+            parts.forEach(p => {
+              const clean = p.trim();
+              if (clean.length > 2 && !stopWords.has(clean)) {
+                words.add(clean);
+              }
+            });
+          });
+          return words;
+        };
+
+        const extractedKeywords = getKeywords(extractedSkills);
+
         let matchedCount = 0;
         requiredSkills.forEach((reqSkill: string) => {
-          const reqLower = reqSkill.toLowerCase().trim();
-          const isMatched = extractedSet.has(reqLower) || 
-                            Array.from(extractedSet).some(ext => ext.includes(reqLower) || reqLower.includes(ext));
+          const reqKeywords = Array.from(getKeywords([reqSkill]));
+          if (reqKeywords.length === 0) return;
+          
+          const isMatched = reqKeywords.some(word => extractedKeywords.has(word));
           if (isMatched) {
             matchedCount++;
           }
@@ -88,11 +109,12 @@ export class AnalysisController {
           matchPercentage = extractedSkills.length > 0 ? 35 : 15;
         }
 
-        // Align missingSkills exactly with calculated overlap to eliminate logical discrepancies
+        // Align missingSkills exactly with computed token overlap
         const computedMissing = requiredSkills.filter((reqSkill: string) => {
-          const reqLower = reqSkill.toLowerCase().trim();
-          const isMatched = extractedSet.has(reqLower) || 
-                            Array.from(extractedSet).some(ext => ext.includes(reqLower) || reqLower.includes(ext));
+          const reqKeywords = Array.from(getKeywords([reqSkill]));
+          if (reqKeywords.length === 0) return false;
+          
+          const isMatched = reqKeywords.some(word => extractedKeywords.has(word));
           return !isMatched;
         });
 
