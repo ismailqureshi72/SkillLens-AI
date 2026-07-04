@@ -82,7 +82,7 @@ export default function SupportPage() {
                 <h3 className="font-bold text-on-surface mb-xs">Contact Us Directly</h3>
                 <p className="flex items-center gap-xs font-mono text-[13px] text-primary mt-xs">
                   <span className="material-symbols-outlined text-[16px]">mail</span>
-                  support@skilllens.ai
+                  mr.iq7860@gmail.com
                 </p>
               </div>
             </div>

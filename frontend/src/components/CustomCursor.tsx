@@ -4,7 +4,6 @@ import { useApp } from '../context/AppContext';
 export default function CustomCursor() {
   const { theme } = useApp();
   const cursorRef = useRef<HTMLDivElement>(null);
-  const dotRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Detect touch capability dynamically
@@ -12,12 +11,10 @@ export default function CustomCursor() {
     if (hasTouch) return;
 
     const cursor = cursorRef.current;
-    const dot = dotRef.current;
-    if (!cursor || !dot) return;
+    if (!cursor) return;
 
     // Start as hidden until mouse moves
     cursor.style.opacity = '0';
-    dot.style.opacity = '0';
 
     let mouseX = 0;
     let mouseY = 0;
@@ -28,22 +25,18 @@ export default function CustomCursor() {
       mouseX = e.clientX;
       mouseY = e.clientY;
       if (cursorRef.current) cursorRef.current.style.opacity = '1';
-      if (dotRef.current) dotRef.current.style.opacity = '1';
     };
 
     const handleMouseLeave = () => {
       if (cursorRef.current) cursorRef.current.style.opacity = '0';
-      if (dotRef.current) dotRef.current.style.opacity = '0';
     };
 
     const handleMouseEnter = () => {
       if (cursorRef.current) cursorRef.current.style.opacity = '1';
-      if (dotRef.current) dotRef.current.style.opacity = '1';
     };
 
     const handleTouchStart = () => {
       if (cursorRef.current) cursorRef.current.style.opacity = '0';
-      if (dotRef.current) dotRef.current.style.opacity = '0';
     };
 
     const handleMouseOver = (e: MouseEvent) => {
@@ -60,17 +53,14 @@ export default function CustomCursor() {
         stylesHasCursorPointer(target);
       
       const cNode = cursorRef.current;
-      const dNode = dotRef.current;
-      if (!cNode || !dNode) return;
+      if (!cNode) return;
 
       if (isClickable) {
         cNode.classList.remove('w-6', 'h-6');
         cNode.classList.add('w-10', 'h-10', 'border-primary');
-        dNode.classList.add('scale-0');
       } else {
         cNode.classList.remove('w-10', 'h-10', 'border-primary');
         cNode.classList.add('w-6', 'h-6');
-        dNode.classList.remove('scale-0');
       }
     };
 
@@ -98,9 +88,6 @@ export default function CustomCursor() {
 
       if (cursorRef.current) {
         cursorRef.current.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0)`;
-      }
-      if (dotRef.current) {
-        dotRef.current.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
       }
       
       animationFrameId = requestAnimationFrame(render);
@@ -130,15 +117,6 @@ export default function CustomCursor() {
         style={{
           willChange: 'transform',
           transitionProperty: 'width, height, background-color, border-color, opacity',
-        }}
-      />
-      {/* Sharp Inner Dot */}
-      <div
-        ref={dotRef}
-        className="fixed top-0 left-0 pointer-events-none z-[9999] w-1.5 h-1.5 rounded-full bg-primary -translate-x-1/2 -translate-y-1/2 transition-transform duration-100 scale-100"
-        style={{
-          willChange: 'transform',
-          transitionProperty: 'transform, opacity',
         }}
       />
     </>
