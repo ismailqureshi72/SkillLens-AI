@@ -1,15 +1,23 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import { useApp } from '../context/AppContext';
 
 export default function CustomCursor() {
+  const { theme } = useApp();
   const cursorRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLDivElement>(null);
-  const [hovered, setHovered] = useState(false);
-  const [hidden, setHidden] = useState(true);
 
   useEffect(() => {
+    // Detect touch capability dynamically
+    const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (hasTouch) return;
+
     const cursor = cursorRef.current;
     const dot = dotRef.current;
     if (!cursor || !dot) return;
+
+    // Start as hidden until mouse moves
+    cursor.style.opacity = '0';
+    dot.style.opacity = '0';
 
     let mouseX = 0;
     let mouseY = 0;
@@ -19,19 +27,23 @@ export default function CustomCursor() {
     const handleMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
-      setHidden(false);
+      if (cursorRef.current) cursorRef.current.style.opacity = '1';
+      if (dotRef.current) dotRef.current.style.opacity = '1';
     };
 
     const handleMouseLeave = () => {
-      setHidden(true);
+      if (cursorRef.current) cursorRef.current.style.opacity = '0';
+      if (dotRef.current) dotRef.current.style.opacity = '0';
     };
 
     const handleMouseEnter = () => {
-      setHidden(false);
+      if (cursorRef.current) cursorRef.current.style.opacity = '1';
+      if (dotRef.current) dotRef.current.style.opacity = '1';
     };
 
     const handleTouchStart = () => {
-      setHidden(true);
+      if (cursorRef.current) cursorRef.current.style.opacity = '0';
+      if (dotRef.current) dotRef.current.style.opacity = '0';
     };
 
     const handleMouseOver = (e: MouseEvent) => {
@@ -47,7 +59,19 @@ export default function CustomCursor() {
         target.classList.contains('cursor-pointer') ||
         stylesHasCursorPointer(target);
       
-      setHovered(!!isClickable);
+      const cNode = cursorRef.current;
+      const dNode = dotRef.current;
+      if (!cNode || !dNode) return;
+
+      if (isClickable) {
+        cNode.classList.remove('w-6', 'h-6');
+        cNode.classList.add('w-10', 'h-10', 'border-primary');
+        dNode.classList.add('scale-0');
+      } else {
+        cNode.classList.remove('w-10', 'h-10', 'border-primary');
+        cNode.classList.add('w-6', 'h-6');
+        dNode.classList.remove('scale-0');
+      }
     };
 
     const stylesHasCursorPointer = (el: HTMLElement): boolean => {
@@ -67,7 +91,7 @@ export default function CustomCursor() {
 
     let animationFrameId: number;
     const render = () => {
-      // Linear interpolation to make the outer ring drag/trail smoothly behind mouse
+      // Linear interpolation to make the outer ring drag/trail smoothly
       const ease = 0.15;
       cursorX += (mouseX - cursorX) * ease;
       cursorY += (mouseY - cursorY) * ease;
@@ -93,28 +117,28 @@ export default function CustomCursor() {
     };
   }, []);
 
-  if (hidden) return null;
-
   return (
     <>
       {/* Trailing Outer Ring */}
       <div
         ref={cursorRef}
-        className={`fixed top-0 left-0 pointer-events-none z-[9999] rounded-full border border-outline-variant/60 mix-blend-difference transition-all duration-150 ease-out -translate-x-1/2 -translate-y-1/2 ${
-          hovered ? 'w-10 h-10 bg-white border-white' : 'w-6 h-6'
+        className={`fixed top-0 left-0 pointer-events-none z-[9999] rounded-full border transition-all duration-150 ease-out -translate-x-1/2 -translate-y-1/2 w-6 h-6 ${
+          theme === 'dark' 
+            ? 'border-white/80 bg-white/5' 
+            : 'border-black/80 bg-black/5'
         }`}
         style={{
           willChange: 'transform',
+          transitionProperty: 'width, height, background-color, border-color, opacity',
         }}
       />
       {/* Sharp Inner Dot */}
       <div
         ref={dotRef}
-        className={`fixed top-0 left-0 pointer-events-none z-[9999] w-1.5 h-1.5 rounded-full bg-primary mix-blend-difference -translate-x-1/2 -translate-y-1/2 transition-transform duration-100 ${
-          hovered ? 'scale-0' : 'scale-100'
-        }`}
+        className="fixed top-0 left-0 pointer-events-none z-[9999] w-1.5 h-1.5 rounded-full bg-primary -translate-x-1/2 -translate-y-1/2 transition-transform duration-100 scale-100"
         style={{
           willChange: 'transform',
+          transitionProperty: 'transform, opacity',
         }}
       />
     </>
