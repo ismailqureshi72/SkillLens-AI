@@ -98,9 +98,9 @@ export class AIService {
         const parsed = JSON.parse(cleanedResult) as AnalysisResponse;
 
         // Ensure keys exist and are arrays to prevent parsing crashes
-        if (!parsed.extracted_skills) parsed.extracted_skills = [];
-        if (!parsed.required_skills) parsed.required_skills = [];
-        if (!parsed.missing_skills) parsed.missing_skills = [];
+        if (!parsed.extracted_skills && !(parsed as any).extractedSkills) parsed.extracted_skills = [];
+        if (!parsed.required_skills && !(parsed as any).requiredSkills) parsed.required_skills = [];
+        if (!parsed.missing_skills && !(parsed as any).missingSkills) parsed.missing_skills = [];
         if (!parsed.roadmap) parsed.roadmap = [];
 
         return parsed;

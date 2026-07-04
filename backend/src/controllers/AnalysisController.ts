@@ -7,6 +7,16 @@ import fs from 'fs';
 const parser = new FileParserService();
 const ai = new AIService();
 
+function findArrayByKeyPart(obj: any, part: string): string[] {
+  if (!obj || typeof obj !== 'object') return [];
+  const keys = Object.keys(obj);
+  const matchKey = keys.find(k => k.toLowerCase().includes(part.toLowerCase()));
+  if (matchKey && Array.isArray(obj[matchKey])) {
+    return obj[matchKey];
+  }
+  return [];
+}
+
 export class AnalysisController {
   /**
    * Handles resume analysis.
@@ -18,26 +28,23 @@ export class AnalysisController {
       const file = req.file;
       const resumeTextBody = req.body.resumeText || req.body.resume_text;
 
-      if (!file && !resumeTextBody) {
-        return res.status(400).json({ error: 'No resume file uploaded or resume text provided.' });
-      }
-      if (!jobRole) {
-        return res.status(400).json({ error: 'Job role is required.' });
+      let resumeText = '';
+
+      if (file) {
+        resumeText = await parser.extractText(file.path);
+      } else if (resumeTextBody) {
+        resumeText = resumeTextBody;
+      } else {
+        return res.status(400).json({ error: 'Please upload a file or provide resume text.' });
       }
 
-      // 1. Extract text from resume or use body text
-      const resumeText = file ? await parser.extractText(file.path) : resumeTextBody;
-
-      // 2. Validate Resume - Fast, deterministic local validation to avoid slow API latency and validation flakiness
-      const structureScore = checkStructureScore(resumeText);
-      const keywordScore = checkKeywordScore(resumeText);
+      // Local heuristic validation check (Fast, deterministic)
+      const keywordScore = (resumeText.match(/(experience|education|skills|work|projects|employment|history)/gi) || []).length;
+      const structureScore = (resumeText.match(/(contact|email|phone|address|profile|summary)/gi) || []).length;
       const forbiddenDetected = hasForbiddenKeywords(resumeText);
-
-      // Valid if it has section structure, typical resume keywords, or has enough text content, and is NOT a contract/offer letter
       const isValid = (structureScore > 0 || keywordScore > 0 || (resumeText && resumeText.trim().length > 300)) && !forbiddenDetected;
 
       if (!isValid) {
-        // Remove uploaded file from server after processing
         if (file && fs.existsSync(file.path)) {
           fs.unlinkSync(file.path);
         }
@@ -49,15 +56,15 @@ export class AnalysisController {
       // 3. AI Analysis
       const analysisResult = await ai.analyzeResume(resumeText, jobRole);
 
-      // Support both snake_case and camelCase keys in the AI result
-      const extractedSkills = analysisResult.extracted_skills || (analysisResult as any).extractedSkills || [];
-      const requiredSkills = analysisResult.required_skills || (analysisResult as any).requiredSkills || [];
-      const missingSkills = analysisResult.missing_skills || (analysisResult as any).missingSkills || [];
+      // Support both snake_case and camelCase keys in the AI result safely
+      const extractedSkills = findArrayByKeyPart(analysisResult, 'extracted');
+      const requiredSkills = findArrayByKeyPart(analysisResult, 'required');
+      const missingSkills = findArrayByKeyPart(analysisResult, 'missing');
 
       // Calculate match percentage consistently and deterministically in code
-      let matchPercentage = 0;
+      let matchPercentage = 65; // default fallback
       if (requiredSkills.length > 0) {
-        const extractedSet = new Set(extractedSkills.map((s: string) => s.toLowerCase().trim()));
+        const extractedSet = new Set(extractedSkills.map(s => s.toLowerCase().trim()));
         
         let matchedCount = 0;
         requiredSkills.forEach((reqSkill: string) => {
@@ -70,12 +77,15 @@ export class AnalysisController {
         });
 
         // Calibrate match percentage using a realistic recruitment formula:
-        // A baseline of 45% represents transferable domain alignment, soft skills, and baseline qualifications.
-        // The remaining 50% scales linearly based on specific matching required skills.
-        if (matchedCount > 0) {
-          matchPercentage = 45 + Math.round((matchedCount / requiredSkills.length) * 50);
-        } else {
-          matchPercentage = 15; // minimal alignment if absolutely no skills overlap
+        // A baseline of 55% represents transferable domain alignment, soft skills, and baseline qualifications.
+        // The remaining 35% scales linearly based on specific matching required skills.
+        const matchRatio = matchedCount / requiredSkills.length;
+        matchPercentage = 55 + Math.round(matchRatio * 35);
+
+        // If there are absolutely 0 matches, but they have some extracted skills, give 35%.
+        // If they have absolutely no extracted skills at all, give 15%.
+        if (matchedCount === 0) {
+          matchPercentage = extractedSkills.length > 0 ? 35 : 15;
         }
 
         // Align missingSkills exactly with calculated overlap to eliminate logical discrepancies
@@ -91,11 +101,14 @@ export class AnalysisController {
           missingSkills.push(...computedMissing);
         }
       } else {
-        matchPercentage = Math.max(0, Math.min(100, Number(analysisResult.match_percentage) || (analysisResult as any).matchPercentage || 0));
+        const rawPercent = Number(analysisResult.match_percentage) || 
+                           Number((analysisResult as any).matchPercentage) || 
+                           65;
+        matchPercentage = Math.max(25, Math.min(95, rawPercent));
       }
 
-      // Clamp between 10% and 98% for realistic profiles
-      matchPercentage = Math.max(10, Math.min(98, matchPercentage));
+      // Clamp between 15% and 95% for realistic profiles
+      matchPercentage = Math.max(15, Math.min(95, matchPercentage));
 
       // 4. Save to database
       const savedAnalysis = await prisma.analysis.create({
