@@ -4,6 +4,7 @@ import { JobController } from '../controllers/JobController.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { prisma } from '../services/PrismaService.js';
 
 const router = Router();
 const analysisController = new AnalysisController();
@@ -48,8 +49,21 @@ router.get('/trends/:role', (req, res, next) => {
 router.post('/jobs/match', (req, res, next) => {
   jobController.matchJobs(req, res).catch(next);
 });
-router.get('/jobs/all', (req, res, next) => {
-  jobController.getAllJobs(req, res).catch(next);
+// Support Ticketing Routes
+router.post('/support', async (req, res, next) => {
+  try {
+    const { name, email, message } = req.body;
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: 'Name, email, and message are required.' });
+    }
+    const ticket = await prisma.supportTicket.create({
+      data: { name, email, message }
+    });
+    return res.status(201).json(ticket);
+  } catch (error: any) {
+    console.error('Support Ticket Creation Error:', error);
+    return res.status(500).json({ error: 'Failed to create support ticket in database.' });
+  }
 });
 
 export default router;

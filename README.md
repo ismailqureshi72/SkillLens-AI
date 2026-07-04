@@ -58,12 +58,13 @@ An AI-powered application that analyzes resumes against target job roles to iden
 ## ⚙️ How it Works
 1. **Resume Upload**: The user uploads a `.pdf` or `.docx` file.
 2. **Text Extraction**: The backend uses `pdf-parse` or `mammoth` to extract raw text.
-3. **AI Analysis**: The text is sent to OpenAI GPT-4o with a structured prompt to:
+3. **AI Analysis**: The text is sent to OpenAI GPT-4o (or OpenCode Zen) with a structured prompt to:
    - Extract existing skills.
    - Define required skills for the chosen role.
    - Calculate a match percentage.
    - Generate a step-by-step roadmap to bridge the gap.
 4. **Visualization**: The frontend displays the result using a match-gauge and interactive roadmap cards.
+5. **Support Tickets**: Users can submit help desk tickets via the interactive Support page. Inquiries are validated and saved directly to the Neon PostgreSQL database under the `SupportTicket` table.
 
 ## 🔒 Security & Optimizations
 - **File Validation**: Only `.pdf` and `.docx` are accepted.

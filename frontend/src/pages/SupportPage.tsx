@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import API_BASE_URL from '../config/api';
 
 export default function SupportPage() {
   const navigate = useNavigate();
@@ -8,17 +9,39 @@ export default function SupportPage() {
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !message) {
       alert("Please fill in all fields.");
       return;
     }
-    // Simulate sending ticket
-    setSubmitted(true);
-    setName('');
-    setEmail('');
-    setMessage('');
+    
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/support`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, message })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to send support ticket. Please try again.');
+      }
+      
+      setSubmitted(true);
+      setName('');
+      setEmail('');
+      setMessage('');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'An error occurred while submitting. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -127,12 +150,25 @@ export default function SupportPage() {
                   />
                 </div>
 
+                {error && (
+                  <p className="text-error font-body-sm text-body-sm bg-error/10 border border-error/20 p-sm rounded-lg">
+                    {error}
+                  </p>
+                )}
+
                 <button
                   type="submit"
-                  className="bg-primary text-on-primary font-label-md text-label-md py-md rounded-lg active:scale-95 transition-all text-center hover:opacity-95 shadow-md flex items-center justify-center gap-sm"
+                  disabled={loading}
+                  className={`py-md rounded-lg active:scale-95 transition-all text-center flex items-center justify-center gap-sm shadow-md font-label-md text-label-md ${
+                    loading
+                      ? 'bg-surface-container-highest text-on-surface-variant/40 cursor-not-allowed border border-outline-variant/10 shadow-none'
+                      : 'bg-primary text-on-primary hover:opacity-95'
+                  }`}
                 >
-                  <span className="material-symbols-outlined text-[18px]">send</span>
-                  Send Ticket
+                  <span className="material-symbols-outlined text-[18px]">
+                    {loading ? 'hourglass_empty' : 'send'}
+                  </span>
+                  {loading ? 'Sending...' : 'Send Ticket'}
                 </button>
               </form>
             )}
