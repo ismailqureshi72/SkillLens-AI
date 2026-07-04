@@ -107,14 +107,14 @@
   --color-on-error-container: var(--on-error-container);
 
   /* Spacing overrides from prototype design theme */
-  --spacing-xl: 20px;
+  --spacing-xl: 40px;
   --spacing-margin-mobile: 16px;
   --spacing-margin-desktop: 48px;
   --spacing-xs: 4px;
-  --spacing-lg: 16px;
-  --spacing-gutter: 16px;
+  --spacing-lg: 24px;
+  --spacing-gutter: 24px;
   --spacing-unit: 4px;
-  --spacing-md: 12px;
+  --spacing-md: 16px;
   --spacing-max-width: 1440px;
   --spacing-sm: 8px;
 
@@ -131,15 +131,6 @@
   --font-body-md: "Inter", sans-serif;
   --font-headline-sm: "Inter", sans-serif;
   --font-headline-md: "Inter", sans-serif;
-}
-
-@media (min-width: 768px) {
-  :root {
-    --spacing-xl: 40px;
-    --spacing-lg: 24px;
-    --spacing-gutter: 24px;
-    --spacing-md: 16px;
-  }
 }
 
 body {

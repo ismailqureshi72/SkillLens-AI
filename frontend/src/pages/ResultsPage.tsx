@@ -146,6 +146,43 @@ export default function ResultsPage() {
 
         {/* Dashboard Top Row: Score Circular Chart + Summary Message */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter items-stretch">
+          {/* Circular Gauge Card */}
+          <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl shadow-sm flex flex-col items-center justify-center text-center">
+            <h3 className="font-headline-sm text-headline-sm text-on-surface mb-lg">Match Score</h3>
+            
+            <div className="w-48 h-48 relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    innerRadius={65}
+                    outerRadius={85}
+                    paddingAngle={3}
+                    dataKey="value"
+                    stroke="none"
+                    startAngle={90}
+                    endAngle={-270}
+                  >
+                    <Cell fill={MATCH_COLOR} />
+                    <Cell fill={GAP_COLOR} />
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-4xl font-black text-on-surface tracking-tight">
+                  {matchPercentage}%
+                </span>
+                <span className="font-label-sm text-label-sm text-on-surface-variant mt-xs">
+                  Match
+                </span>
+              </div>
+            </div>
+
+            <p className="font-body-sm text-body-sm text-on-surface-variant mt-lg max-w-[220px]">
+              Your background aligns with {matchPercentage}% of key role competencies.
+            </p>
+          </div>
+
           {/* Core Alignment Info Box */}
           <div className="lg:col-span-2 bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl shadow-sm flex flex-col justify-between">
             <div className="flex flex-col gap-md">
@@ -186,47 +223,43 @@ export default function ResultsPage() {
               </div>
             </div>
           </div>
-
-          {/* Circular Gauge Card */}
-          <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl shadow-sm flex flex-col items-center justify-center text-center">
-            <h3 className="font-headline-sm text-headline-sm text-on-surface mb-lg">Match Score</h3>
-            
-            <div className="w-48 h-48 relative">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    innerRadius={65}
-                    outerRadius={85}
-                    paddingAngle={3}
-                    dataKey="value"
-                    stroke="none"
-                    startAngle={90}
-                    endAngle={-270}
-                  >
-                    <Cell fill={MATCH_COLOR} />
-                    <Cell fill={GAP_COLOR} />
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-4xl font-black text-on-surface tracking-tight">
-                  {matchPercentage}%
-                </span>
-                <span className="font-label-sm text-label-sm text-on-surface-variant mt-xs">
-                  Match
-                </span>
-              </div>
-            </div>
-
-            <p className="font-body-sm text-body-sm text-on-surface-variant mt-lg max-w-[220px]">
-              Your background aligns with {matchPercentage}% of key role competencies.
-            </p>
-          </div>
         </div>
 
         {/* Dashboard Grid Row: Skills Matched vs Gaps Identified */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter items-start">
+          {/* Gaps Identified Card (1 Column wide) */}
+          <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl shadow-sm flex flex-col gap-md">
+            <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm pb-xs border-b border-outline-variant/20">
+              <span className="material-symbols-outlined text-error">cancel</span>
+              Gaps Identified
+            </h3>
+
+            <div className="flex flex-col gap-md mt-xs">
+              {missingSkills.length > 0 ? (
+                missingSkills.map((gap, index) => (
+                  <div key={gap} className="flex gap-md items-start p-md bg-surface-container-lowest border-l-4 border-error border border-outline-variant/10 rounded-lg">
+                    <span className="font-mono-label text-mono-label text-error bg-error/10 h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0">
+                      {index + 1}
+                    </span>
+                    <div>
+                      <h4 className="font-label-md text-label-md text-on-surface font-bold">
+                        {gap}
+                      </h4>
+                      <p className="font-body-sm text-[12px] text-on-surface-variant mt-xs">
+                        Missing requirement in current target profile parameters.
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center gap-md p-md bg-green-50 dark:bg-green-950/20 border-l-4 border-green-600 rounded-lg text-green-700 dark:text-green-300">
+                  <span className="material-symbols-outlined text-lg">check_circle</span>
+                  <span className="font-body-sm text-body-sm">Perfect alignment! No gaps detected.</span>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Matched Core Skills & Tools (2 Columns wide) */}
           <div className="lg:col-span-2 flex flex-col gap-lg bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl shadow-sm">
             <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm pb-xs border-b border-outline-variant/20">
@@ -274,39 +307,6 @@ export default function ResultsPage() {
               </div>
             </div>
           </div>
-
-          {/* Gaps Identified Card (1 Column wide) */}
-          <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl shadow-sm flex flex-col gap-md">
-            <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm pb-xs border-b border-outline-variant/20">
-              <span className="material-symbols-outlined text-error">cancel</span>
-              Gaps Identified
-            </h3>
-
-            <div className="flex flex-col gap-md mt-xs">
-              {missingSkills.length > 0 ? (
-                missingSkills.map((gap, index) => (
-                  <div key={gap} className="flex gap-md items-start p-md bg-surface-container-lowest border-l-4 border-error border border-outline-variant/10 rounded-lg">
-                    <span className="font-mono-label text-mono-label text-error bg-error/10 h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0">
-                      {index + 1}
-                    </span>
-                    <div>
-                      <h4 className="font-label-md text-label-md text-on-surface font-bold">
-                        {gap}
-                      </h4>
-                      <p className="font-body-sm text-[12px] text-on-surface-variant mt-xs">
-                        Missing requirement in current target profile parameters.
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="flex items-center gap-md p-md bg-green-50 dark:bg-green-950/20 border-l-4 border-green-600 rounded-lg text-green-700 dark:text-green-300">
-                  <span className="material-symbols-outlined text-lg">check_circle</span>
-                  <span className="font-body-sm text-body-sm">Perfect alignment! No gaps detected.</span>
-                </div>
-              )}
-            </div>
-          </div>
         </div>
 
         {/* RoadmapTimeline Section */}
@@ -316,26 +316,23 @@ export default function ResultsPage() {
             Recommended Upskilling Roadmap
           </h3>
 
-          <div className="flex flex-col gap-lg mt-md pl-0 md:pl-sm relative">
+          <div className="flex flex-col gap-lg mt-md pl-sm relative">
             {/* Horizontal Timeline Connector Bar */}
-            <div className="hidden md:block absolute left-[20px] top-4 bottom-4 w-[2px] bg-outline-variant/30 pointer-events-none" />
+            <div className="absolute left-[24px] top-4 bottom-4 w-[2px] bg-outline-variant/30 pointer-events-none" />
 
             {roadmap.map((item, index) => (
-              <div key={index} className="flex flex-col md:flex-row gap-md md:gap-lg items-start relative z-10 w-full">
-                {/* Timeline Circle (Desktop only) */}
-                <div className="hidden md:flex h-10 w-10 rounded-full bg-primary text-on-primary border-4 border-surface items-center justify-center flex-shrink-0 font-bold text-sm shadow-md">
+              <div key={index} className="flex gap-lg items-start relative z-10">
+                {/* Timeline Circle */}
+                <div className="h-10 w-10 rounded-full bg-primary text-on-primary border-4 border-surface flex items-center justify-center flex-shrink-0 font-bold text-sm shadow-md">
                   {index + 1}
                 </div>
                 
-                <div className="w-full bg-surface border border-outline-variant/20 rounded-xl p-md md:p-lg flex flex-col gap-sm hover:border-primary/40 transition-colors duration-150">
-                  <h4 className="font-headline-sm text-[18px] text-on-surface font-bold flex flex-wrap items-center gap-sm">
-                    <span className="md:hidden bg-primary/10 text-primary px-sm py-xs text-[11px] font-mono rounded-lg">
-                      Step {index + 1}
-                    </span>
-                    <span>{item.step}</span>
+                <div className="flex-grow bg-surface border border-outline-variant/20 rounded-xl p-lg flex flex-col gap-sm hover:border-primary/40 transition-colors duration-150">
+                  <h4 className="font-headline-sm text-[18px] text-on-surface font-bold">
+                    {item.step}
                   </h4>
                   
-                  <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                  <p className="font-body-sm text-body-sm text-on-surface-variant">
                     {item.description}
                   </p>
 
@@ -350,10 +347,10 @@ export default function ResultsPage() {
                           href={`https://www.google.com/search?q=${encodeURIComponent(res)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="font-mono-label text-[11px] md:text-[12px] text-primary bg-primary/5 hover:bg-primary/10 border border-primary/20 px-xs py-xs md:px-sm md:py-xs rounded transition-colors duration-150 inline-flex items-center gap-xs"
+                          className="font-mono-label text-[12px] text-primary bg-primary/5 hover:bg-primary/10 border border-primary/20 px-sm py-xs rounded transition-colors duration-150 inline-flex items-center gap-xs"
                         >
-                          <span>{res}</span>
-                          <span className="material-symbols-outlined text-[13px] md:text-[14px]">open_in_new</span>
+                          {res}
+                          <span className="material-symbols-outlined text-[14px]">open_in_new</span>
                         </a>
                       ))}
                     </div>
