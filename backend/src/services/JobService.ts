@@ -202,22 +202,24 @@ const MOCK_JOBS: Job[] = [
 const getRoleCategory = (title: string): string => {
   const t = title.toLowerCase();
   
-  if (t.includes('nurse') || t.includes('doctor') || t.includes('pharmacist') || t.includes('clinical') || t.includes('medical') || t.includes('surgeon') || t.includes('nutrition') || t.includes('diet')) {
+  if (t.includes('nurse') || t.includes('doctor') || t.includes('pharmacist') || t.includes('clinical') || t.includes('medical') || t.includes('surgeon') || t.includes('nutrition') || t.includes('diet') || t.includes('healthcare') || t.includes('dentist') || t.includes('hospital')) {
     return 'Healthcare & Medical';
   }
-  if (t.includes('finance') || t.includes('analyst') || t.includes('accountant') || t.includes('auditor') || t.includes('tax') || t.includes('banker') || t.includes('brand manager')) {
+  if (t.includes('finance') || t.includes('analyst') || t.includes('accountant') || t.includes('auditor') || t.includes('tax') || t.includes('banker') || t.includes('brand manager') || t.includes('marketing') || t.includes('sales') || t.includes('business')) {
     return 'Finance & Business';
   }
-  if (t.includes('teacher') || t.includes('professor') || t.includes('tutor') || t.includes('educat') || t.includes('academic')) {
+  if (t.includes('teacher') || t.includes('professor') || t.includes('tutor') || t.includes('educat') || t.includes('academic') || t.includes('school') || t.includes('english')) {
     return 'Education & Training';
   }
-  if (t.includes('mechanical') || t.includes('civil') || t.includes('electrical') || t.includes('chemical') || t.includes('industrial') || t.includes('aerospace') || t.includes('environmental')) {
-    return 'Traditional Engineering';
+  if (t.includes('mechanical') || t.includes('civil') || t.includes('electrical') || t.includes('chemical') || t.includes('industrial') || t.includes('aerospace') || t.includes('environmental') || t.includes('engineering') || t.includes('cad')) {
+    if (!t.includes('software') && !t.includes('computer') && !t.includes('data') && !t.includes('network')) {
+      return 'Traditional Engineering';
+    }
   }
   if (t.includes('lawyer') || t.includes('paralegal') || t.includes('legal') || t.includes('compliance') || t.includes('contract')) {
     return 'Legal';
   }
-  if (t.includes('supply') || t.includes('logistics') || t.includes('inventory') || t.includes('support') || t.includes('operations') || t.includes('customer') || t.includes('hr ') || t.includes('human resources') || t.includes('writer') || t.includes('content')) {
+  if (t.includes('supply') || t.includes('logistics') || t.includes('inventory') || t.includes('support') || t.includes('operations') || t.includes('customer') || t.includes('hr ') || t.includes('human resources') || t.includes('writer') || t.includes('content') || t.includes('copywrite')) {
     return 'Operations & Support';
   }
   if (t.includes('designer') || t.includes('design') || t.includes('graphic') || t.includes('creative') || t.includes('art') || t.includes('ui/') || t.includes('ux') || t.includes(' ui') || t.includes('ux ')) {
@@ -237,7 +239,12 @@ const getRoleCategory = (title: string): string => {
     t.includes('ai ') || 
     t.includes('qa') || 
     t.includes('blockchain') || 
-    t.includes('security')
+    t.includes('security') ||
+    t.includes('computer science') ||
+    t.includes('computer') ||
+    t.includes('computing') ||
+    t.includes('cs') ||
+    t.includes('it')
   ) {
     return 'Technology & Software';
   }
@@ -302,9 +309,33 @@ export class JobService {
     // Filter by targetRole category if specified to keep suggestions highly relevant
     if (targetRole && targetRole.trim() !== '') {
       const targetCat = getRoleCategory(targetRole);
-      // Filter out unrelated categories if we have jobs matching the target category
-      const categoryJobs = jobs.filter(j => getRoleCategory(j.title) === targetCat);
+      
+      // 1. Filter out unrelated categories if we have jobs matching the target category
+      let categoryJobs = jobs.filter(j => getRoleCategory(j.title) === targetCat);
+      
       if (categoryJobs.length > 0) {
+        // 2. Secondary semantic filter: if the targetRole has specific keywords (e.g. "nutrition", "cs", "nurse"),
+        // prioritize jobs that match those keywords, and exclude jobs that have zero keyword match and very low match percentage (< 35%)
+        const targetTokens = targetRole.toLowerCase()
+          .replace(/[()\[\].,\/#!$%\^&\*;:{}=\-_`~?]/g, ' ')
+          .split(/\s+/)
+          .filter(w => w.length > 2 && w !== 'engineer' && w !== 'developer' && w !== 'graduate' && w !== 'specialist' && w !== 'manager');
+
+        if (targetTokens.length > 0) {
+          const semanticJobs = categoryJobs.filter(j => {
+            const titleLower = j.title.toLowerCase();
+            const descLower = j.description.toLowerCase();
+            
+            // Check if job matches any target token in title or description, OR has a decent match percentage
+            const hasKeywordMatch = targetTokens.some(tok => titleLower.includes(tok) || descLower.includes(tok));
+            return hasKeywordMatch || j.matchPercentage >= 40;
+          });
+          
+          if (semanticJobs.length > 0) {
+            categoryJobs = semanticJobs;
+          }
+        }
+        
         jobs = categoryJobs;
       }
     }
