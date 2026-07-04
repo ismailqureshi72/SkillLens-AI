@@ -225,87 +225,84 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        {/* Dashboard Grid Row: Skills Matched vs Gaps Identified */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter items-start">
-          {/* Gaps Identified Card (1 Column wide) */}
-          <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl shadow-sm flex flex-col gap-md">
-            <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm pb-xs border-b border-outline-variant/20">
-              <span className="material-symbols-outlined text-error">cancel</span>
-              Gaps Identified
-            </h3>
+        {/* Matched Competencies Section (Full width) */}
+        <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl shadow-sm flex flex-col gap-lg">
+          <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm pb-xs border-b border-outline-variant/20">
+            <span className="material-symbols-outlined text-primary">check_circle</span>
+            Matched Competencies
+          </h3>
 
-            <div className="flex flex-col gap-md mt-xs">
-              {missingSkills.length > 0 ? (
-                missingSkills.map((gap, index) => (
-                  <div key={gap} className="flex gap-md items-start p-md bg-surface-container-lowest border-l-4 border-error border border-outline-variant/10 rounded-lg">
-                    <span className="font-mono-label text-mono-label text-error bg-error/10 h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0">
-                      {index + 1}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-lg mt-xs">
+            {/* Core Skills Subpanel */}
+            <div className="flex flex-col gap-md">
+              <h4 className="font-label-md text-label-md font-bold text-on-surface flex items-center gap-xs">
+                <span className="material-symbols-outlined text-[18px]">code</span>
+                Core Methodologies
+              </h4>
+              <div className="flex flex-wrap gap-sm">
+                {coreSkills.length > 0 ? (
+                  coreSkills.map(skill => (
+                    <span key={skill} className="font-body-sm text-body-sm px-md py-xs bg-surface border border-outline-variant/30 text-on-surface rounded-lg">
+                      {skill}
                     </span>
-                    <div>
-                      <h4 className="font-label-md text-label-md text-on-surface font-bold">
-                        {gap}
-                      </h4>
-                      <p className="font-body-sm text-[12px] text-on-surface-variant mt-xs">
-                        Missing requirement in current target profile parameters.
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="flex items-center gap-md p-md bg-green-50 dark:bg-green-950/20 border-l-4 border-green-600 rounded-lg text-green-700 dark:text-green-300">
-                  <span className="material-symbols-outlined text-lg">check_circle</span>
-                  <span className="font-body-sm text-body-sm">Perfect alignment! No gaps detected.</span>
-                </div>
-              )}
+                  ))
+                ) : (
+                  <span className="font-body-sm text-body-sm text-on-surface-variant italic">No core methodologies parsed</span>
+                )}
+              </div>
+            </div>
+
+            {/* Tools & Platforms Subpanel */}
+            <div className="flex flex-col gap-md">
+              <h4 className="font-label-md text-label-md font-bold text-on-surface flex items-center gap-xs">
+                <span className="material-symbols-outlined text-[18px]">build</span>
+                Tools & Platforms
+              </h4>
+              <div className="flex flex-wrap gap-sm">
+                {toolsAndPlatforms.length > 0 ? (
+                  toolsAndPlatforms.map(tool => (
+                    <span key={tool} className="font-body-sm text-body-sm px-md py-xs bg-surface border border-outline-variant/30 text-primary font-semibold rounded-lg">
+                      {tool}
+                    </span>
+                  ))
+                ) : (
+                  <span className="font-body-sm text-body-sm text-on-surface-variant italic">No tools or platforms parsed</span>
+                )}
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Matched Core Skills & Tools (2 Columns wide) */}
-          <div className="lg:col-span-2 flex flex-col gap-lg bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl shadow-sm">
-            <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm pb-xs border-b border-outline-variant/20">
-              <span className="material-symbols-outlined text-primary">check_circle</span>
-              Matched Competencies
-            </h3>
+        {/* Gaps Identified Section (Full width, placed below Matched Competencies) */}
+        <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl shadow-sm flex flex-col gap-md">
+          <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm pb-xs border-b border-outline-variant/20">
+            <span className="material-symbols-outlined text-error">cancel</span>
+            Gaps Identified
+          </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-lg mt-xs">
-              {/* Core Skills Subpanel */}
-              <div className="flex flex-col gap-md">
-                <h4 className="font-label-md text-label-md font-bold text-on-surface flex items-center gap-xs">
-                  <span className="material-symbols-outlined text-[18px]">code</span>
-                  Core Methodologies
-                </h4>
-                <div className="flex flex-wrap gap-sm">
-                  {coreSkills.length > 0 ? (
-                    coreSkills.map(skill => (
-                      <span key={skill} className="font-body-sm text-body-sm px-md py-xs bg-surface border border-outline-variant/30 text-on-surface rounded-lg">
-                        {skill}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="font-body-sm text-body-sm text-on-surface-variant italic">No core methodologies parsed</span>
-                  )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md mt-xs">
+            {missingSkills.length > 0 ? (
+              missingSkills.map((gap, index) => (
+                <div key={gap} className="flex gap-md items-start p-md bg-surface-container-lowest border-l-4 border-error border border-outline-variant/10 rounded-lg">
+                  <span className="font-mono-label text-mono-label text-error bg-error/10 h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0">
+                    {index + 1}
+                  </span>
+                  <div>
+                    <h4 className="font-label-md text-label-md text-on-surface font-bold">
+                      {gap}
+                    </h4>
+                    <p className="font-body-sm text-[12px] text-on-surface-variant mt-xs">
+                      Missing requirement in current target profile parameters.
+                    </p>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="col-span-full flex items-center gap-md p-md bg-green-50 dark:bg-green-950/20 border-l-4 border-green-600 rounded-lg text-green-700 dark:text-green-300">
+                <span className="material-symbols-outlined text-lg">check_circle</span>
+                <span className="font-body-sm text-body-sm">Perfect alignment! No gaps detected.</span>
               </div>
-
-              {/* Tools & Platforms Subpanel */}
-              <div className="flex flex-col gap-md">
-                <h4 className="font-label-md text-label-md font-bold text-on-surface flex items-center gap-xs">
-                  <span className="material-symbols-outlined text-[18px]">build</span>
-                  Tools & Platforms
-                </h4>
-                <div className="flex flex-wrap gap-sm">
-                  {toolsAndPlatforms.length > 0 ? (
-                    toolsAndPlatforms.map(tool => (
-                      <span key={tool} className="font-body-sm text-body-sm px-md py-xs bg-surface border border-outline-variant/30 text-primary font-semibold rounded-lg">
-                        {tool}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="font-body-sm text-body-sm text-on-surface-variant italic">No tools or platforms parsed</span>
-                  )}
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 

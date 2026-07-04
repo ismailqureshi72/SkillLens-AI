@@ -49,17 +49,12 @@ export class AnalysisController {
       // 3. AI Analysis
       const analysisResult = await ai.analyzeResume(resumeText, jobRole);
 
-      // Calculate match percentage deterministically in code to prevent LLM hallucinations
       const extractedSkills = analysisResult.extracted_skills || [];
       const requiredSkills = analysisResult.required_skills || [];
       const missingSkills = analysisResult.missing_skills || [];
 
-      let matchPercentage = 0;
-      if (requiredSkills.length > 0) {
-        const matchedSkillsCount = requiredSkills.length - missingSkills.length;
-        matchPercentage = Math.round((matchedSkillsCount / requiredSkills.length) * 100);
-      }
-      matchPercentage = Math.max(0, Math.min(100, matchPercentage));
+      // Use the LLM-provided match percentage directly to avoid 0% calculation discrepancies
+      const matchPercentage = Math.max(0, Math.min(100, Number(analysisResult.match_percentage) || 0));
 
       // 4. Save to database
       const savedAnalysis = await prisma.analysis.create({

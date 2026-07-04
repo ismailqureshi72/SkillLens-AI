@@ -45,7 +45,7 @@ export class AIService {
       
       3. "missing_skills": The crucial skills that are required for "${jobRole}" but are completely absent or insufficient in the candidate's resume.
       
-      4. "match_percentage": A placeholder percentage (an integer between 0 and 100) representing initial alignment. Note: This will be calibrated programmatically.
+      4. "match_percentage": A realistic match percentage (an integer between 0 and 100) representing how well the candidate's extracted skills match the required skills for the target role.
       
       5. "roadmap": A sequenced, practical 3-step upskilling trajectory to bridge the missing skills gap.
          Each step must include:
