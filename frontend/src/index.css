@@ -37,7 +37,7 @@
 }
 
 .dark {
-  /* Nocturnal Command (Dark Theme) variables — Sleek Matte/Pitch Black Theme */
+  /* Nocturnal Command (Dark Theme) variables — Sleek Matte/Pitch Black with Glowing Blue Accents */
   --surface: #09090b;
   --surface-dim: #09090b;
   --surface-bright: #27272a;
@@ -50,20 +50,20 @@
   --on-surface-variant: #a1a1aa;
   --inverse-surface: #f4f4f5;
   --inverse-on-surface: #18181b;
-  --outline: #52525b;
+  --outline: #3f3f46;
   --outline-variant: #27272a;
-  --primary: #fafafa;
-  --on-primary: #18181b;
-  --primary-container: #27272a;
-  --on-primary-container: #f4f4f5;
-  --secondary: #a1a1aa;
-  --on-secondary: #09090b;
-  --secondary-container: #27272a;
-  --on-secondary-container: #e4e4e7;
-  --tertiary: #e4e4e7;
-  --on-tertiary: #18181b;
-  --tertiary-container: #141416;
-  --on-tertiary-container: #a1a1aa;
+  --primary: #0052cc;
+  --on-primary: #ffffff;
+  --primary-container: #003d9b;
+  --on-primary-container: #c4d2ff;
+  --secondary: #bfd1ff;
+  --on-secondary: #002e6a;
+  --secondary-container: #0052cc;
+  --on-secondary-container: #ffffff;
+  --tertiary: #76e2ff;
+  --on-tertiary: #004b59;
+  --tertiary-container: #006477;
+  --on-tertiary-container: #76e2ff;
   --background: #09090b;
   --on-background: #f4f4f5;
   --error: #ffb4ab;
@@ -138,6 +138,47 @@ body {
   color: var(--on-surface);
   font-family: var(--font-sans);
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+@utility text-display-lg {
+  font-size: clamp(1.85rem, 5vw, 3rem);
+  line-height: 1.15;
+}
+@utility text-headline-lg {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  line-height: 1.2;
+}
+@utility text-headline-md {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  line-height: 1.25;
+}
+@utility text-headline-sm {
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  line-height: 1.3;
+}
+@utility text-body-lg {
+  font-size: clamp(1rem, 1.5vw, 1.125rem);
+  line-height: 1.5;
+}
+@utility text-body-md {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+@utility text-body-sm {
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+@utility text-label-md {
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+@utility text-label-sm {
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+@utility text-mono-label {
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
 
 .shimmer {

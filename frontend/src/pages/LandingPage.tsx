@@ -59,9 +59,9 @@ export default function LandingPage() {
   return (
     <main className="flex-grow pt-24 pb-xl transition-colors duration-200">
       {/* Hero & Upload Dropzone Section */}
-      <section className="max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-gutter items-center min-h-[716px]">
+      <section className="max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-gutter items-center min-h-0 lg:min-h-[716px]">
         {/* Left Column: Copywriting CTAs */}
-        <div className="flex flex-col gap-lg pr-lg">
+        <div className="flex flex-col gap-lg pr-0 lg:pr-lg">
           <div className="inline-flex items-center gap-sm bg-surface-container px-sm py-xs rounded-full w-fit border border-outline-variant/30">
             <span className="material-symbols-outlined text-primary text-[16px]">temp_preferences_custom</span>
             <span className="font-label-md text-label-md text-on-surface-variant">Expert Partner Engine v2.4</span>

@@ -28,12 +28,13 @@ export class AnalysisController {
       // 1. Extract text from resume or use body text
       const resumeText = file ? await parser.extractText(file.path) : resumeTextBody;
 
-      // 2. Validate Resume
+      // 2. Validate Resume - Fast, deterministic local validation to avoid slow API latency and validation flakiness
       const structureScore = checkStructureScore(resumeText);
-      const aiSaysYes = await ai.classifyResume(resumeText);
+      const keywordScore = checkKeywordScore(resumeText);
       const forbiddenDetected = hasForbiddenKeywords(resumeText);
 
-      const isValid = aiSaysYes && (structureScore > 0) && !forbiddenDetected;
+      // Valid if it has section structure, typical resume keywords, or has enough text content, and is NOT a contract/offer letter
+      const isValid = (structureScore > 0 || keywordScore > 0 || (resumeText && resumeText.trim().length > 300)) && !forbiddenDetected;
 
       if (!isValid) {
         // Remove uploaded file from server after processing
