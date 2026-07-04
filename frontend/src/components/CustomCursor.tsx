@@ -82,7 +82,7 @@ export default function CustomCursor() {
     let animationFrameId: number;
     const render = () => {
       // Linear interpolation to make the outer ring drag/trail smoothly
-      const ease = 0.15;
+      const ease = 0.35;
       cursorX += (mouseX - cursorX) * ease;
       cursorY += (mouseY - cursorY) * ease;
 
@@ -109,7 +109,7 @@ export default function CustomCursor() {
       {/* Trailing Outer Ring */}
       <div
         ref={cursorRef}
-        className={`fixed top-0 left-0 pointer-events-none z-[9999] rounded-full border transition-all duration-150 ease-out -translate-x-1/2 -translate-y-1/2 w-6 h-6 ${
+        className={`fixed top-0 left-0 pointer-events-none z-[9999] rounded-full border -translate-x-1/2 -translate-y-1/2 w-6 h-6 ${
           theme === 'dark' 
             ? 'border-white/80 bg-white/5' 
             : 'border-black/80 bg-black/5'
@@ -117,6 +117,8 @@ export default function CustomCursor() {
         style={{
           willChange: 'transform',
           transitionProperty: 'width, height, background-color, border-color, opacity',
+          transitionDuration: '150ms',
+          transitionTimingFunction: 'ease-out',
         }}
       />
     </>
