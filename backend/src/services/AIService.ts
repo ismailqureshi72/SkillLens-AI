@@ -66,7 +66,7 @@ export class AIService {
       temperature: 0,
     });
 
-    const result = response.choices[0]?.message?.content;
+    const result = response.choices?.[0]?.message?.content;
     if (!result) throw new Error('AI failed to generate a response.');
 
     // Clean up potential markdown code block wrappers (e.g. ```json ... ```) returned by the LLM
@@ -105,7 +105,7 @@ ${resumeText}`;
         temperature: 0,
       });
 
-      const result = response.choices[0]?.message?.content?.trim().toUpperCase();
+      const result = response.choices?.[0]?.message?.content?.trim().toUpperCase();
       return result === 'YES' || result?.includes('YES') === true;
     } catch (err) {
       console.error('AI Classification Error:', err);
