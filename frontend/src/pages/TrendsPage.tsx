@@ -308,6 +308,7 @@ export default function TrendsPage() {
                   <XAxis dataKey="name" stroke="currentColor" fontSize={11} tickLine={false} />
                   <YAxis stroke="currentColor" fontSize={12} tickLine={false} />
                   <Tooltip 
+                    cursor={{ fill: theme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)' }}
                     contentStyle={{
                       backgroundColor: theme === 'dark' ? '#0f172a' : '#ffffff',
                       borderColor: theme === 'dark' ? '#334155' : '#e2e8f0',

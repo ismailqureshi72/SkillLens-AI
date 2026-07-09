@@ -1,13 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 
 export default function CustomCursor() {
   const { theme } = useApp();
   const cursorRef = useRef<HTMLDivElement>(null);
+  const [isTouch, setIsTouch] = useState(false);
 
   useEffect(() => {
     // Detect touch capability dynamically
     const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setIsTouch(hasTouch);
     if (hasTouch) return;
 
     const cursor = cursorRef.current;
@@ -81,8 +83,8 @@ export default function CustomCursor() {
 
     let animationFrameId: number;
     const render = () => {
-      // Linear interpolation to make the outer ring drag/trail smoothly
-      const ease = 0.35;
+      // Linear interpolation to make the outer ring drag/trail smoothly - set to 0.65 for high responsiveness
+      const ease = 0.65;
       cursorX += (mouseX - cursorX) * ease;
       cursorY += (mouseY - cursorY) * ease;
 
@@ -104,12 +106,14 @@ export default function CustomCursor() {
     };
   }, []);
 
+  if (isTouch) return null;
+
   return (
     <>
       {/* Trailing Outer Ring */}
       <div
         ref={cursorRef}
-        className={`fixed top-0 left-0 pointer-events-none z-[9999] rounded-full border -translate-x-1/2 -translate-y-1/2 w-6 h-6 ${
+        className={`fixed top-0 left-0 pointer-events-none z-[9999] rounded-full border -translate-x-1/2 -translate-y-1/2 w-6 h-6 opacity-0 transition-opacity duration-300 ${
           theme === 'dark' 
             ? 'border-white/80 bg-white/5' 
             : 'border-black/80 bg-black/5'

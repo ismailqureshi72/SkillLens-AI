@@ -211,13 +211,11 @@ body {
   }
 }
 
-/* Hide default cursor on desktop pointer devices to enable custom cursor replacement */
+/* Hide default cursor globally on desktop pointer devices to enable complete custom cursor replacement */
 @media (hover: hover) and (pointer: fine) {
+  html, 
   body, 
-  a, 
-  button, 
-  [role="button"], 
-  .cursor-pointer {
+  html * {
     cursor: none !important;
   }
 }
