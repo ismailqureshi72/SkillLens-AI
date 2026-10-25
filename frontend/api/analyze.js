@@ -1,7 +1,13 @@
 import { analyzeResume } from '../lib/ai.js';
 import { prisma } from '../lib/prisma.js';
-import { PDFParse } from 'pdf-parse';
+import { DOMMatrix, ImageData, Path2D } from '@napi-rs/canvas';
 import mammoth from 'mammoth';
+
+// PDF.js needs these APIs in Node. Explicit imports let Vercel bundle the
+// native canvas dependency, which PDF.js otherwise loads dynamically.
+globalThis.DOMMatrix ||= DOMMatrix;
+globalThis.ImageData ||= ImageData;
+globalThis.Path2D ||= Path2D;
 
 // Helper: CORS headers
 function corsHeaders() {
@@ -37,6 +43,7 @@ function hasForbiddenKeywords(text) {
 async function extractTextFromBuffer(buffer, filename) {
   const ext = filename.split('.').pop()?.toLowerCase();
   if (ext === 'pdf') {
+    const { PDFParse } = await import('pdf-parse');
     const parser = new PDFParse({ data: buffer });
     try {
       const result = await parser.getText();

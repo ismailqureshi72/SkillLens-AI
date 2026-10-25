@@ -1,7 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "api/analyze.js": { "maxDuration": 60 }
+    "api/analyze.js": {
+      "maxDuration": 60,
+      "includeFiles": "node_modules/{@napi-rs,pdfjs-dist}/**"
+    }
   },
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
