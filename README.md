@@ -70,3 +70,22 @@ An AI-powered application that analyzes resumes against target job roles to iden
 - **File Validation**: Only `.pdf` and `.docx` are accepted.
 - **Strict JSON Output**: Using OpenAI's `response_format: { type: 'json_object' }` to ensure stability.
 - **Clean Architecture**: Separation of concerns into Controllers, Services, and Routes.
+
+## Vercel deployment
+
+The Vercel project's Root Directory must be `frontend`, with the Vite preset,
+build command `npm run build`, and output directory `dist`. The `frontend/api`
+functions replace the Railway API. Shared server code lives in `frontend/lib`.
+Production browser requests use the same domain, even if an old `VITE_API_URL`
+remains in the project settings.
+
+Set these server-only environment variables in Vercel for Production (and
+Preview if needed): `DATABASE_URL`, `OPENAI_API_KEY`, `OPENAI_BASE_URL`, and
+`OPENAI_MODEL`. Copy the existing private values from your environment; never
+commit `.env` or put these secrets in variables starting with `VITE_`.
+The existing Neon database and tables are reused without resetting data.
+
+From `frontend`, run `npm ci`, `npm test`, and `npm run build` before deploying.
+After deployment, check `/api/health`, `/api/analyses`, `/api/jobs/match`, and
+`/api/trends/Backend%20Engineer`, then test a resume upload. Resume analysis has
+a 60-second function duration. Vercel's request size limit also applies to uploads.

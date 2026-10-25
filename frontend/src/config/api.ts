@@ -1,7 +1,9 @@
-let rawUrl = import.meta.env.VITE_API_URL;
+// Production serves the frontend and API together on Vercel.
+// Ignore any old Railway URL left in the hosting project's environment.
+let rawUrl = import.meta.env.PROD ? '' : import.meta.env.VITE_API_URL;
 
 if (!rawUrl) {
-  rawUrl = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+  rawUrl = import.meta.env.PROD || (typeof window !== 'undefined' && window.location.hostname !== 'localhost')
     ? ''
     : 'http://localhost:5000';
 } else {

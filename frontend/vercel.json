@@ -1,6 +1,9 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/analyze.js": { "maxDuration": 60 }
+  },
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://skilllens-ai.up.railway.app/api/:path*" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

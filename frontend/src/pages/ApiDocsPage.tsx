@@ -31,7 +31,7 @@ export default function ApiDocsPage() {
             <div>
               <h2 className="font-headline-sm text-headline-sm text-on-surface mb-xs">Base URL</h2>
               <pre className="p-md bg-surface-container rounded-lg font-mono text-[13px] border border-outline-variant/20">
-                http://localhost:5000/api
+                {typeof window !== 'undefined' ? `${window.location.origin}/api` : '/api'}
               </pre>
             </div>
 
