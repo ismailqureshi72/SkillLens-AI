@@ -6,3 +6,6 @@ node_modules/
 uploads/
 dist/
 downloads/
+
+.vercel
+.env*
