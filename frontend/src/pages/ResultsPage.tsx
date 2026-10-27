@@ -74,8 +74,9 @@ export default function ResultsPage() {
 
   // Helper to categorize skills (e.g. tools vs core skills)
   const isTool = (skill: string) => {
-    const tools = ['figma', 'aws', 'docker', 'git', 'kubernetes', 'apollo', 'graphql', 'webpack', 'react', 'vue', 'angular', 'postgres', 'mysql', 'sqlite', 'mongodb', 'typescript'];
-    return tools.some(t => skill.toLowerCase().includes(t));
+    const tools = ['figma', 'aws', 'docker', 'git', 'kubernetes', 'apollo', 'graphql', 'webpack', 'react', 'vue', 'angular', 'postgres', 'mysql', 'sqlite', 'mongodb', 'typescript', 'python', 'r', 'raven', 'caris', 'qgis'];
+    const words = skill.toLowerCase().split(/[^a-z0-9]+/);
+    return tools.some(tool => words.includes(tool));
   };
 
   const coreSkills = extractedSkills.filter(s => !isTool(s));
@@ -153,7 +154,7 @@ export default function ResultsPage() {
             </div>
 
             <p className="font-body-sm text-body-sm text-on-surface-variant mt-lg max-w-[220px]">
-              Your background aligns with {matchPercentage}% of key role competencies.
+              AI-estimated alignment with the target role: {matchPercentage}%.
             </p>
           </div>
 
@@ -203,7 +204,7 @@ export default function ResultsPage() {
         <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl shadow-sm flex flex-col gap-lg">
           <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm pb-xs border-b border-outline-variant/20">
             <span className="material-symbols-outlined text-primary">check_circle</span>
-            Matched Competencies
+            Skills Found in Your Resume
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-lg mt-xs">
@@ -316,8 +317,9 @@ export default function ResultsPage() {
 
                   <div className="flex flex-col gap-xs mt-sm pt-sm border-t border-outline-variant/10">
                     <span className="font-label-sm text-[11px] text-outline uppercase tracking-wider font-bold">
-                      Suggested Learning & Certifications
+                      AI-Suggested References
                     </span>
+                    <p className="text-body-sm text-on-surface-variant">Links search the web for suggested topics. Verify the source, course availability and suitability before using them.</p>
                     <div className="flex flex-wrap gap-sm mt-xs">
                       {item.resources.map(res => (
                         <a

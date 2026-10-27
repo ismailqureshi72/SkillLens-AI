@@ -506,7 +506,7 @@ export default function WorkspacePage() {
                 )}
 
                 {/* Custom Role Helper Banner */}
-                {roleQuery.trim() !== '' && !suggestions.some(s => s.name.toLowerCase() === roleQuery.toLowerCase().trim()) && (
+                {!selectedRole && roleQuery.trim() !== '' && !suggestions.some(s => s.name.toLowerCase() === roleQuery.toLowerCase().trim()) && (
                   <div className="p-md bg-primary/5 border border-primary/20 rounded-lg flex items-start gap-md mt-sm">
                     <span className="material-symbols-outlined text-primary text-[20px] shrink-0">info</span>
                     <p className="font-body-sm text-body-sm text-on-surface-variant">
