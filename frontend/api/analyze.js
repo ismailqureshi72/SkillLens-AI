@@ -1,5 +1,6 @@
 import { analyzeResume } from '../lib/ai.js';
 import { prisma } from '../lib/prisma.js';
+import { ensureOwner, privateResponse } from '../lib/session.js';
 import { DOMMatrix, ImageData, Path2D } from '@napi-rs/canvas';
 import mammoth from 'mammoth';
 
@@ -18,16 +19,6 @@ function corsHeaders() {
   };
 }
 
-function findArrayByKeyPart(obj, part) {
-  if (!obj || typeof obj !== 'object') return [];
-  const keys = Object.keys(obj);
-  const matchKey = keys.find(k => k.toLowerCase().includes(part.toLowerCase()));
-  if (matchKey && Array.isArray(obj[matchKey])) {
-    return obj[matchKey];
-  }
-  return [];
-}
-
 function hasForbiddenKeywords(text) {
   const forbiddenList = [
     /offer letter/i,
@@ -44,18 +35,23 @@ async function extractTextFromBuffer(buffer, filename) {
   const ext = filename.split('.').pop()?.toLowerCase();
   if (ext === 'pdf') {
     const { PDFParse } = await import('pdf-parse');
-    const parser = new PDFParse({ data: buffer });
+    let parser;
     try {
-      const result = await parser.getText();
-      return result.text;
-    } finally {
-      await parser.destroy();
-    }
+      parser = new PDFParse({ data: buffer });
+      try {
+        const result = await parser.getText();
+        return result.text;
+      } finally {
+        await parser.destroy();
+      }
+    } catch { throw Object.assign(new Error('This PDF could not be read. Please upload a valid, unlocked PDF.'), { status: 400 }); }
   } else if (ext === 'docx') {
-    const result = await mammoth.extractRawText({ buffer });
-    return result.value;
+    try {
+      const result = await mammoth.extractRawText({ buffer });
+      return result.value;
+    } catch { throw Object.assign(new Error('This Word document could not be read. Please upload a valid DOCX file.'), { status: 400 }); }
   } else {
-    throw new Error('Unsupported file format. Please upload a PDF or DOCX file.');
+    throw Object.assign(new Error('Unsupported file format. Please upload a PDF or DOCX file.'), { status: 415 });
   }
 }
 
@@ -74,6 +70,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  privateResponse(res);
   try {
     let resumeText = '';
     let jobRole = '';
@@ -89,6 +86,7 @@ export default async function handler(req, res) {
       jobRole = fields.jobRole || fields.targetRole || fields.target_role || '';
 
       if (file) {
+        if (file.buffer.length > 4 * 1024 * 1024) return res.status(413).json({ error: 'Please upload a file smaller than 4 MB.' });
         resumeText = await extractTextFromBuffer(file.buffer, file.filename);
       } else if (fields.resumeText || fields.resume_text) {
         resumeText = fields.resumeText || fields.resume_text;
@@ -113,15 +111,17 @@ export default async function handler(req, res) {
       resumeText = body.resumeText || body.resume_text || '';
     }
 
-    if (!resumeText) {
+    if (typeof jobRole !== 'string' || !jobRole.trim() || jobRole.length > 120) return res.status(400).json({ error: 'Enter a target role between 1 and 120 characters.' });
+    jobRole = jobRole.trim();
+    if (typeof resumeText !== 'string' || resumeText.length > 60000) return res.status(400).json({ error: 'Please use a resume with less than 60,000 characters.' });
+    if (!resumeText.trim()) {
       return res.status(400).json({ error: 'Please upload a file or provide resume text.' });
     }
 
     // Local heuristic validation
     const keywordScore = (resumeText.match(/(experience|education|skills|work|projects|employment|history)/gi) || []).length;
-    const structureScore = (resumeText.match(/(contact|email|phone|address|profile|summary)/gi) || []).length;
     const forbiddenDetected = hasForbiddenKeywords(resumeText);
-    const isValid = (structureScore > 0 || keywordScore > 0 || (resumeText && resumeText.trim().length > 300)) && !forbiddenDetected;
+    const isValid = (keywordScore >= 2 && resumeText.trim().length >= 100) && !forbiddenDetected;
 
     if (!isValid) {
       return res.status(400).json({
@@ -132,71 +132,8 @@ export default async function handler(req, res) {
     // AI Analysis
     const analysisResult = await analyzeResume(resumeText, jobRole);
 
-    const extractedSkills = findArrayByKeyPart(analysisResult, 'extracted');
-    const requiredSkills = findArrayByKeyPart(analysisResult, 'required');
-    const missingSkills = findArrayByKeyPart(analysisResult, 'missing');
-
-    // Calculate match percentage
-    let matchPercentage = 65;
-    if (requiredSkills.length > 0) {
-      const getKeywords = (skills) => {
-        const words = new Set();
-        const stopWords = new Set(['and', 'or', 'for', 'with', 'the', 'of', 'in', 'by', 'an', 'to', 'at', 'on', 'a', 'best', 'practices', 'level', 'implied', 'portfolio', 'link', 'using', 'based', 'core', 'strong']);
-
-        skills.forEach(skill => {
-          const parts = skill.toLowerCase()
-            .replace(/[()[\].,\/#!$%\^&\*;:{}=\-_`~?]/g, ' ')
-            .split(/\s+/);
-
-          parts.forEach(p => {
-            const clean = p.trim();
-            if (clean.length > 2 && !stopWords.has(clean)) {
-              words.add(clean);
-            }
-          });
-        });
-        return words;
-      };
-
-      const extractedKeywords = getKeywords(extractedSkills);
-
-      let matchedCount = 0;
-      requiredSkills.forEach(reqSkill => {
-        const reqKeywords = Array.from(getKeywords([reqSkill]));
-        if (reqKeywords.length === 0) return;
-
-        const isMatched = reqKeywords.some(word => extractedKeywords.has(word));
-        if (isMatched) {
-          matchedCount++;
-        }
-      });
-
-      const matchRatio = matchedCount / requiredSkills.length;
-      matchPercentage = 55 + Math.round(matchRatio * 35);
-
-      if (matchedCount === 0) {
-        matchPercentage = extractedSkills.length > 0 ? 35 : 15;
-      }
-
-      const computedMissing = requiredSkills.filter(reqSkill => {
-        const reqKeywords = Array.from(getKeywords([reqSkill]));
-        if (reqKeywords.length === 0) return false;
-        const isMatched = reqKeywords.some(word => extractedKeywords.has(word));
-        return !isMatched;
-      });
-
-      if (computedMissing.length > 0) {
-        missingSkills.length = 0;
-        missingSkills.push(...computedMissing);
-      }
-    } else {
-      const rawPercent = Number(analysisResult.match_percentage) ||
-                         Number(analysisResult.matchPercentage) ||
-                         65;
-      matchPercentage = Math.max(25, Math.min(95, rawPercent));
-    }
-
-    matchPercentage = Math.max(15, Math.min(95, matchPercentage));
+    const { extractedSkills, requiredSkills, missingSkills, matchPercentage, roadmap } = analysisResult;
+    const userId = await ensureOwner(req, res);
 
     // Save to database
     const savedAnalysis = await prisma.analysis.create({
@@ -207,8 +144,8 @@ export default async function handler(req, res) {
         requiredSkills: JSON.stringify(requiredSkills),
         missingSkills: JSON.stringify(missingSkills),
         matchPercentage: matchPercentage,
-        roadmap: JSON.stringify(analysisResult.roadmap),
-        userId: null,
+        roadmap: JSON.stringify(roadmap),
+        userId,
       },
     });
 
@@ -218,11 +155,13 @@ export default async function handler(req, res) {
       extractedSkills,
       requiredSkills,
       missingSkills,
-      roadmap: analysisResult.roadmap,
+      roadmap,
     });
   } catch (error) {
-    console.error('Analysis Error:', error);
-    return res.status(500).json({ error: error.message || 'An internal error occurred during analysis.' });
+    const status = [400, 413, 415, 429, 502, 503].includes(error.status) ? error.status : 500;
+    if (error.retryAfter) res.setHeader('Retry-After', String(error.retryAfter));
+    if (status === 500) console.error('Analysis could not be saved or processed.');
+    return res.status(status).json({ error: status === 500 ? 'Unable to complete the analysis. Please try again.' : error.message });
   }
 }
 

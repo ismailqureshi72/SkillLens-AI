@@ -1,12 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { useApp } from '../context/AppContext';
-import axios from 'axios';
-import API_BASE_URL from '../config/api';
+import { useApp } from '../context/useApp';
 
 export default function ResultsPage() {
-  const { analysisResult, setAnalysisResult, theme, fetchTrends, matchedJobs, fetchMatchedJobs, history } = useApp();
+  const { analysisResult, setAnalysisResult, theme, matchedJobs, fetchMatchedJobs, history, historyLoading } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -14,43 +12,20 @@ export default function ResultsPage() {
   const queryParams = new URLSearchParams(location.search);
   const queryId = queryParams.get('id');
 
+  const [copyMessage, setCopyMessage] = useState('');
   useEffect(() => {
-    // If we have a queryId but no active analysisResult, try to load it from history/backend
-    if (queryId && !analysisResult) {
-      const loadFromHistory = async () => {
-        let currentHistory = history;
-        if (history.length === 0) {
-          try {
-            const response = await axios.get(`${API_BASE_URL}/api/analyses`);
-            currentHistory = response.data.map((item: any) => ({
-              ...item,
-              extractedSkills: typeof item.extractedSkills === 'string' ? JSON.parse(item.extractedSkills) : item.extractedSkills,
-              requiredSkills: typeof item.requiredSkills === 'string' ? JSON.parse(item.requiredSkills) : item.requiredSkills,
-              missingSkills: typeof item.missingSkills === 'string' ? JSON.parse(item.missingSkills) : item.missingSkills,
-              roadmap: typeof item.roadmap === 'string' ? JSON.parse(item.roadmap) : item.roadmap,
-            }));
-          } catch (err) {
-            console.error('Failed to fetch history for query ID', err);
-          }
-        }
-        
-        const match = currentHistory.find(item => String(item.id) === queryId);
-        if (match) {
-          setAnalysisResult(match);
-        }
-      };
-      loadFromHistory();
-    }
-  }, [queryId, analysisResult, history, setAnalysisResult]);
+    if (!queryId || historyLoading || analysisResult?.id === queryId) return;
+    const found = history.find(item => item.id === queryId);
+    setAnalysisResult(found || null);
+  }, [queryId, historyLoading, history, analysisResult?.id, setAnalysisResult]);
+  useEffect(() => {
+    if (analysisResult) fetchMatchedJobs(analysisResult.extractedSkills, analysisResult.jobRole);
+  }, [analysisResult, fetchMatchedJobs]);
 
-  useEffect(() => {
-    if (analysisResult) {
-      fetchMatchedJobs(analysisResult.extractedSkills, analysisResult.jobRole);
-    }
-  }, [analysisResult]);
+  if (historyLoading && queryId) return <main className="flex-grow pt-24 px-margin-mobile md:px-margin-desktop" role="status">Loading your private analysis…</main>;
 
   // If no analysis is active, load a fallback from history or show placeholder state
-  if (!analysisResult) {
+  if (!analysisResult || (queryId && analysisResult.id !== queryId)) {
     return (
       <main className="flex-grow pt-24 pb-xl transition-colors duration-200">
         <div className="max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop text-center py-xl bg-surface-container-low border border-outline-variant/30 rounded-xl shadow-sm">
@@ -59,7 +34,7 @@ export default function ResultsPage() {
           </span>
           <h3 className="font-headline-sm text-headline-sm text-on-surface">No Active Analysis</h3>
           <p className="font-body-md text-body-md text-on-surface-variant max-w-[400px] mx-auto mt-xs">
-            Upload your resume and select a target job role parameters to generate your detailed skill gap analysis.
+            This analysis is available only in the browser session that created it. Upload a resume here to create a private report.
           </p>
           <button
             onClick={() => navigate('/')}
@@ -89,18 +64,13 @@ export default function ResultsPage() {
     window.print();
   };
 
-  const handleShareProfile = () => {
-    const shareUrl = analysisResult?.id
-      ? `${window.location.origin}/results?id=${analysisResult.id}`
-      : window.location.href;
-    navigator.clipboard.writeText(shareUrl);
-    alert("Skill gap report link copied to clipboard!");
+  const handleShareProfile = async () => {
+    try {
+      await navigator.clipboard.writeText(analysisResult.id ? window.location.origin + '/results?id=' + analysisResult.id : window.location.href);
+      setCopyMessage('Private link copied. It opens only in this browser session.');
+    } catch { setCopyMessage('The link could not be copied. You can copy the address from your browser.'); }
   };
-
-  const handleViewTrends = async () => {
-    await fetchTrends(jobRole);
-    navigate(`/trends?role=${encodeURIComponent(jobRole)}`);
-  };
+  const handleViewTrends = () => navigate('/trends?role=' + encodeURIComponent(jobRole));
 
   // Helper to categorize skills (e.g. tools vs core skills)
   const isTool = (skill: string) => {
@@ -119,7 +89,7 @@ export default function ResultsPage() {
           <div>
             <div className="inline-flex items-center gap-sm bg-surface-container px-sm py-xs rounded-full w-fit border border-outline-variant/30 mb-sm">
               <span className="material-symbols-outlined text-primary text-[16px]">verified</span>
-              <span className="font-label-md text-label-md text-on-surface-variant">Calibration Complete</span>
+              <span className="font-label-md text-label-md text-on-surface-variant">{analysisResult.isDemo ? 'Demo report — sample data' : 'Analysis complete'}</span>
             </div>
             <h2 className="font-headline-lg text-headline-lg text-on-surface">
               Detailed Results: {jobRole}
@@ -136,13 +106,17 @@ export default function ResultsPage() {
             </button>
             <button
               onClick={handleShareProfile}
+              disabled={!analysisResult.id}
+              title={analysisResult.id ? 'Copy a link available only to this browser session' : 'Demo reports do not have a saved link'}
               className="flex-grow md:flex-grow-0 bg-surface-container-high text-on-surface font-label-md text-label-md px-md py-sm rounded-lg active:scale-95 transition-all flex items-center justify-center gap-sm border border-outline-variant/30 hover:bg-surface-container-highest"
             >
               <span className="material-symbols-outlined text-[18px]">share</span>
-              Share Profile
+              Copy Private Link
             </button>
           </div>
         </div>
+
+        {copyMessage && <p role="status" className="text-body-sm text-on-surface-variant">{copyMessage}</p>}
 
         {/* Dashboard Top Row: Score Circular Chart + Summary Message */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter items-stretch">
@@ -191,7 +165,7 @@ export default function ResultsPage() {
                 {matchPercentage >= 70 ? 'Strong Alignment Detected' : 'Core Skill Gap Identified'}
               </h3>
               <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-                The semantic matching engine parsed your resume against target requirements. You demonstrate deep competency in core methodologies. However, bridging specific infrastructure and API configuration gaps will optimize your compatibility for top-tier hiring requirements.
+                This AI estimate compares the experience and skills stated in your resume with the target role. Review the identified gaps and suggested learning steps; it is guidance rather than a hiring decision.
               </p>
             </div>
 
@@ -370,7 +344,7 @@ export default function ResultsPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-md pb-xs border-b border-outline-variant/20">
             <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm">
               <span className="material-symbols-outlined text-primary">work</span>
-              Top Matching Job Openings
+              Related Sample Job Profiles
             </h3>
             <button
               onClick={() => navigate('/jobs')}
@@ -384,13 +358,13 @@ export default function ResultsPage() {
           </div>
 
           <p className="font-body-md text-body-md text-on-surface-variant">
-            Based on your parsed skills and target role parameters, here are the top 3 matches from our job database.
+            These illustrative profiles are not verified vacancies. Check employers’ careers pages for current openings.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter mt-sm">
             {matchedJobs.length === 0 ? (
-              <div className="col-span-3 text-center py-md text-on-surface-variant italic text-body-sm">
-                No matching jobs found. Try updating your target role profile.
+              <div className="col-span-1 md:col-span-3 text-center py-md text-on-surface-variant italic text-body-sm">
+                No relevant sample profiles are available for this role. Check employers’ careers pages for current openings.
               </div>
             ) : (
               matchedJobs.slice(0, 3).map((job) => {

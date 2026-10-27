@@ -5,15 +5,24 @@
 export async function parseMultipart(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
-    req.on('data', (chunk) => chunks.push(chunk));
+    let total = 0;
+    let oversized = false;
+    req.on('data', chunk => {
+      total += chunk.length;
+      if (total > 4 * 1024 * 1024 + 65536) {
+        oversized = true;
+        reject(Object.assign(new Error('Please upload a file smaller than 4 MB.'), { status: 413 }));
+      } else if (!oversized) chunks.push(chunk);
+    });
     req.on('error', reject);
     req.on('end', () => {
+      if (oversized) return;
       try {
         const buffer = Buffer.concat(chunks);
         const contentType = req.headers['content-type'] || '';
         const boundaryMatch = contentType.match(/boundary=(?:"([^"]+)"|([^\s;]+))/);
         if (!boundaryMatch) {
-          return reject(new Error('No boundary found in content-type'));
+          return reject(Object.assign(new Error('The upload could not be read. Please select the file again.'), { status: 400 }));
         }
         const boundary = boundaryMatch[1] || boundaryMatch[2];
         const boundaryBuffer = Buffer.from(`--${boundary}`);

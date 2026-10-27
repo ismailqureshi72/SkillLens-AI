@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 import type { JobMatch } from '../context/AppContext';
+import { splitHighlight } from '../utils/text';
 
 interface JobFilters {
   location: string;
@@ -10,9 +11,21 @@ interface JobFilters {
   remote: boolean;
 }
 
+function getFiltersFromUrl(search: string): JobFilters {
+  const params = new URLSearchParams(search);
+  return {
+    location: params.get('location') || 'All',
+    role: params.get('role') || 'All',
+    match_level: params.get('match_level') || 'All',
+    remote: params.get('remote') === 'true',
+  };
+}
+
+
 export default function JobsPage() {
   const {
     analysisResult,
+    historyLoading,
     matchedJobs,
     setMatchedJobs,
     fetchMatchedJobs,
@@ -25,55 +38,25 @@ export default function JobsPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Helper to parse query parameters from URL
-  const getFiltersFromUrl = (): JobFilters => {
-    const params = new URLSearchParams(location.search);
-    return {
-      location: params.get('location') || 'All',
-      role: params.get('role') || 'All',
-      match_level: params.get('match_level') || 'All',
-      remote: params.get('remote') === 'true',
-    };
-  };
-
-  const initialFilters = getFiltersFromUrl();
+  const initialFilters = getFiltersFromUrl(location.search);
 
   // Filter states
-  const [tempFilters, setTempFilters] = useState<JobFilters>(initialFilters);
-  const [appliedFilters, setAppliedFilters] = useState<JobFilters>(initialFilters);
+  const [draft, setDraft] = useState({ search: location.search, filters: initialFilters });
+  const tempFilters = draft.search === location.search ? draft.filters : initialFilters;
+  const setTempFilters = (update: JobFilters | ((previous: JobFilters) => JobFilters)) => setDraft(previous => {
+    const current = previous.search === location.search ? previous.filters : getFiltersFromUrl(location.search);
+    return { search: location.search, filters: typeof update === 'function' ? update(current) : update };
+  });
   
   // Instant search, search flag, & UI states
-  const [hasSearched, setHasSearched] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
   const [sortBy, setSortBy] = useState<'matchDesc' | 'matchAsc' | 'company' | 'title'>('matchDesc');
 
-  // Reset results on mount to prevent persistence after page refresh
-  // Auto-fetch matching jobs if there is an active analysis result
   useEffect(() => {
-    if (analysisResult) {
-      let skills = analysisResult.extractedSkills;
-      if (typeof skills === 'string') {
-        try {
-          skills = JSON.parse(skills);
-        } catch (e) {
-          skills = [];
-        }
-      }
-      fetchMatchedJobs(skills || [], analysisResult.jobRole || '', initialFilters);
-      setHasSearched(true);
-    } else {
-      setMatchedJobs([]);
-      setHasSearched(false);
-    }
-  }, []);
-
-  // Sync state with URL search params when they change (e.g. on navigation back/forward)
-  useEffect(() => {
-    const urlFilters = getFiltersFromUrl();
-    setAppliedFilters(urlFilters);
-    setTempFilters(urlFilters);
-  }, [location.search]);
+    if (historyLoading) return;
+    fetchMatchedJobs(analysisResult?.extractedSkills || [], analysisResult?.jobRole || '', getFiltersFromUrl(location.search));
+  }, [analysisResult, historyLoading, location.search, fetchMatchedJobs]);
 
   // Pakistan Cities for Location Filter
   const locations = ['All', 'Lahore', 'Karachi', 'Islamabad', 'Remote (Pakistan)'];
@@ -91,15 +74,6 @@ export default function JobsPage() {
     'Other'
   ];
 
-  // Disable Apply/Refresh button only if already searched and no filter changes are pending
-  const hasChanges = 
-    tempFilters.location !== appliedFilters.location ||
-    tempFilters.role !== appliedFilters.role ||
-    tempFilters.match_level !== appliedFilters.match_level ||
-    tempFilters.remote !== appliedFilters.remote;
-
-  const canRefresh = !hasSearched || hasChanges;
-
   const handleApplyFilters = () => {
     const params = new URLSearchParams();
     if (tempFilters.location !== 'All') params.set('location', tempFilters.location);
@@ -107,14 +81,13 @@ export default function JobsPage() {
     if (tempFilters.match_level !== 'All') params.set('match_level', tempFilters.match_level);
     if (tempFilters.remote) params.set('remote', 'true');
     
-    navigate(`/jobs?${params.toString()}`);
-    setAppliedFilters(tempFilters);
+    const nextSearch = params.toString();
+    if (nextSearch !== location.search.slice(1)) { navigate(`/jobs${nextSearch ? '?' + nextSearch : ''}`); return; }
 
     // Fetch matching jobs explicitly on user action
     const skills = analysisResult ? analysisResult.extractedSkills : [];
     const role = analysisResult ? analysisResult.jobRole : '';
     fetchMatchedJobs(skills, role, tempFilters);
-    setHasSearched(true);
   };
 
   const handleResetFilters = () => {
@@ -127,15 +100,10 @@ export default function JobsPage() {
       match_level: 'All',
       remote: false,
     });
-    setAppliedFilters({
-      location: 'All',
-      role: 'All',
-      match_level: 'All',
-      remote: false,
-    });
+
     setMatchedJobs([]);
-    setHasSearched(false);
-    navigate('/jobs');
+    if (location.search) navigate('/jobs');
+    else fetchMatchedJobs(analysisResult?.extractedSkills || [], analysisResult?.jobRole || '', {});
   };
 
   // Filter jobs locally for search query and bookmarks toggle
@@ -162,25 +130,9 @@ export default function JobsPage() {
       return 0;
     });
 
-  // Highlight matches helper
-  const highlightText = (text: string, highlight: string) => {
-    if (!highlight.trim()) return text;
-    const regex = new RegExp(`(${highlight})`, 'gi');
-    const parts = text.split(regex);
-    return (
-      <>
-        {parts.map((part, i) =>
-          regex.test(part) ? (
-            <mark key={i} className="bg-primary/20 text-on-surface rounded px-xs font-semibold">
-              {part}
-            </mark>
-          ) : (
-            part
-          )
-        )}
-      </>
-    );
-  };
+  const highlightText = (text: string, query: string) => splitHighlight(text, query).map((part, i) =>
+    part.matched ? <mark key={i} className="bg-primary/20 text-on-surface rounded px-xs font-semibold">{part.text}</mark> : part.text
+  );
 
   // Animated shimmer loading skeletons for job cards
   const renderSkeletons = () => {
@@ -244,11 +196,11 @@ export default function JobsPage() {
             <p className="font-body-md text-body-md text-on-surface-variant mt-xs">
               {analysisResult ? (
                 <>
-                  Showing opportunities calibrated for your analyzed role:{' '}
+                  Sample profiles for your analyzed role:{' '}
                   <strong className="text-primary">{analysisResult.jobRole}</strong>
                 </>
               ) : (
-                'Browse available jobs or upload a resume to calculate skill match alignment.'
+                'Browse sample job profiles or upload a resume to compare skills.'
               )}
             </p>
           </div>
@@ -277,7 +229,7 @@ export default function JobsPage() {
         <div className="p-md bg-primary/5 border border-primary/20 rounded-xl flex items-start gap-md shadow-sm">
           <span className="material-symbols-outlined text-primary text-[22px] shrink-0">info</span>
           <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-            <strong>Application Notice:</strong> This platform helps you find jobs and analyzes compatibility. All applications are completed directly on the company's official website.
+            <strong>Application Notice:</strong> These are sample job profiles, not verified current vacancies. Check the employer’s careers page for actual openings.
           </p>
         </div>
 
@@ -293,7 +245,7 @@ export default function JobsPage() {
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search jobs by title, company, description, or skills..."
+                aria-label="Search job profiles" maxLength={200} placeholder="Search jobs by title, company, description, or skills..."
                 className="w-full pl-xl pr-md py-md bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-on-surface focus:outline-none focus:border-primary/50 text-body-md transition-colors"
               />
             </div>
@@ -303,7 +255,7 @@ export default function JobsPage() {
               <span className="material-symbols-outlined text-on-surface-variant text-[20px]">sort</span>
               <select
                 value={sortBy}
-                onChange={e => setSortBy(e.target.value as any)}
+                onChange={e => setSortBy(e.target.value as 'matchDesc' | 'matchAsc' | 'company' | 'title')}
                 className="w-full p-md bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-on-surface text-body-md focus:outline-none focus:border-primary/50 cursor-pointer"
               >
                 <option value="matchDesc">Match Score (High to Low)</option>
@@ -407,9 +359,9 @@ export default function JobsPage() {
               </button>
               <button
                 onClick={handleApplyFilters}
-                disabled={!canRefresh}
+                disabled={jobsLoading}
                 className={`font-label-md text-label-md px-lg py-md rounded-lg active:scale-95 transition-all flex items-center justify-center gap-sm shadow-sm font-bold ${
-                  canRefresh
+                  !jobsLoading
                     ? 'bg-primary text-on-primary hover:opacity-95 hover:shadow-md'
                     : 'bg-surface-container-highest text-on-surface-variant/40 cursor-not-allowed border border-outline-variant/10 shadow-none'
                 }`}
@@ -422,38 +374,21 @@ export default function JobsPage() {
         </div>
 
         {/* Jobs List / Grid Container */}
-        {jobsLoading ? (
+        {jobsLoading || historyLoading ? (
           renderSkeletons()
-        ) : !hasSearched ? (
-          <div className="py-xl bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl text-center flex flex-col items-center gap-md animate-fade-in">
-            <span className="material-symbols-outlined text-primary text-[48px]">find_in_page</span>
-            <div>
-              <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">No job matches yet</h3>
-              <p className="font-body-md text-body-md text-on-surface-variant mt-xs">
-                Apply filters and click 'Refresh Results'.
-              </p>
-            </div>
-            <button
-              onClick={handleApplyFilters}
-              className="bg-primary text-on-primary font-label-md text-label-md px-lg py-md rounded-lg active:scale-95 transition-all flex items-center justify-center gap-sm shadow-sm font-bold"
-            >
-              <span className="material-symbols-outlined text-[18px]">refresh</span>
-              Refresh Results
-            </button>
-          </div>
         ) : jobsError ? (
           <div className="py-xl bg-error-container text-on-error-container border border-error/30 rounded-xl p-lg text-center flex flex-col items-center gap-sm">
             <span className="material-symbols-outlined text-[48px]">warning</span>
-            <h3 className="font-headline-sm text-headline-sm font-bold">Failed to Fetch Job Openings</h3>
+            <h3 className="font-headline-sm text-headline-sm font-bold">Unable to Load Sample Profiles</h3>
             <p className="font-body-md text-body-md max-w-md">{jobsError}</p>
           </div>
         ) : filteredJobs.length === 0 ? (
           <div className="py-xl bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl text-center flex flex-col items-center gap-md animate-fade-in">
             <span className="material-symbols-outlined text-primary text-[48px]">search_off</span>
             <div>
-              <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">No jobs found matching your filters</h3>
+              <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">No relevant sample profiles found</h3>
               <p className="font-body-md text-body-md text-on-surface-variant mt-xs">
-                Try clearing your search terms or relaxing filter options.
+                This catalogue may not cover your role. Try another filter or check employers’ careers pages.
               </p>
             </div>
             <button
@@ -466,11 +401,11 @@ export default function JobsPage() {
         ) : (
           <div className="flex flex-col gap-lg animate-fade-in">
             {filteredJobs.map((job: JobMatch) => {
-              const isLowMatch = job.matchPercentage < 40;
+              const isLowMatch = Boolean(analysisResult) && job.matchPercentage < 40;
               const isBookmarked = bookmarks.includes(job.id);
 
               // Color configuration for match percentage badge
-              let badgeBg = 'bg-error/10 text-error border-error/20';
+              let badgeBg = analysisResult ? 'bg-error/10 text-error border-error/20' : 'bg-surface-container-high text-on-surface-variant border-outline-variant/30';
               if (job.matchPercentage >= 75) {
                 badgeBg = 'bg-green-600/10 text-green-600 border-green-600/20';
               } else if (job.matchPercentage >= 60) {
@@ -492,10 +427,10 @@ export default function JobsPage() {
                           {highlightText(job.title, searchQuery)}
                         </h3>
                         <span className={`inline-block font-mono-label text-[12px] font-extrabold px-sm py-xs rounded border ${badgeBg}`}>
-                          {job.matchPercentage}% Match ({job.matchLevel} Match)
+                          {analysisResult ? `${job.matchPercentage}% Match (${job.matchLevel} Match)` : 'Upload a resume to compare'}
                         </span>
                         <span className="inline-block font-mono-label text-[11px] font-bold px-sm py-xs rounded border border-outline-variant/30 bg-surface text-on-surface-variant">
-                          External Application
+                          Sample profile
                         </span>
                       </div>
                       <div className="flex flex-wrap items-center gap-md text-on-surface-variant text-body-sm mt-xs">
@@ -544,10 +479,11 @@ export default function JobsPage() {
                   {/* Skills Alignment Matrix */}
                   <div className="flex flex-col gap-sm pt-sm border-t border-outline-variant/20">
                     <span className="font-label-sm text-[11px] text-on-surface-variant uppercase tracking-wider">
-                      Skills Alignment Matrix
+                      {analysisResult ? 'Skills Alignment' : 'Profile Skills'}
                     </span>
 
                     <div className="flex flex-wrap gap-md">
+                      {!analysisResult && <div className="flex flex-wrap gap-xs">{job.requiredSkills.map(skill => <span key={skill} className="text-label-md bg-surface-container-high text-on-surface-variant px-sm py-xs rounded">{skill}</span>)}</div>}
                       {/* Matched Skills */}
                       {job.matchedSkills.length > 0 && (
                         <div className="flex flex-col gap-xs flex-1 min-w-[200px]">
@@ -569,7 +505,7 @@ export default function JobsPage() {
                       )}
 
                       {/* Missing Skills */}
-                      {job.missingSkills.length > 0 && (
+                      {analysisResult && job.missingSkills.length > 0 && (
                         <div className="flex flex-col gap-xs flex-1 min-w-[200px]">
                           <span className="font-body-sm text-[12px] text-error font-bold flex items-center gap-xs">
                             <span className="material-symbols-outlined text-[16px]">cancel</span>
@@ -591,9 +527,9 @@ export default function JobsPage() {
                   </div>
 
                   {/* Footer Row Actions */}
-                  <div className="flex justify-between items-center mt-sm pt-md border-t border-outline-variant/20">
+                  <div className="flex flex-wrap gap-md justify-between items-center mt-sm pt-md border-t border-outline-variant/20">
                     <span className="font-body-sm text-[12px] text-on-surface-variant">
-                      Source: <strong>{job.company} Career Page</strong>
+                      Sample profile · <strong>{job.company}</strong>
                     </span>
 
                     <div className="flex gap-sm">
@@ -603,7 +539,7 @@ export default function JobsPage() {
                         rel="noreferrer"
                         className="bg-primary text-on-primary font-label-md text-label-md px-lg py-md rounded-lg active:scale-95 transition-all flex items-center gap-xs shadow-sm hover:opacity-95 font-bold"
                       >
-                        Apply on Website
+                        Visit Careers Page
                         <span className="material-symbols-outlined text-[16px]">open_in_new</span>
                       </a>
                     </div>

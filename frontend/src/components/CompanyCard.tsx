@@ -40,7 +40,7 @@ export default function CompanyCard({ company, showFresherBadge = false }: Compa
           {showFresherBadge && company.freshers && (
             <span className="inline-flex items-center gap-xs font-mono-label text-[11px] font-bold bg-green-600/10 text-green-600 px-sm py-xs rounded border border-green-600/20 animate-pulse">
               <span className="material-symbols-outlined text-[14px]">school</span>
-              Freshers Friendly ✅
+                Graduate example
             </span>
           )}
         </div>

@@ -26,18 +26,18 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-surface flex items-center justify-center px-margin-desktop">
-          <div className="max-w-lg mx-auto text-center bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl shadow-lg">
-            <span className="material-symbols-outlined text-[64px] text-error mb-md block">
-              error_outline
-            </span>
+        <main className="app-error-screen bg-surface" role="alert">
+          <div className="app-error-card text-center bg-surface-container-low border border-outline-variant/30 rounded-xl shadow-lg">
+            <svg aria-hidden="true" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-error mb-md mx-auto">
+              <circle cx="12" cy="12" r="9" /><path d="M12 7v6m0 3h.01" />
+            </svg>
             <h1 className="font-headline-lg text-headline-lg text-on-surface mb-md">
               Something Went Wrong
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant mb-lg">
               An unexpected error occurred. Please try refreshing the page.
             </p>
-            {this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <details className="text-left mb-lg">
                 <summary className="font-label-md text-label-md text-on-surface-variant cursor-pointer hover:text-primary transition-colors">
                   Error Details
@@ -51,11 +51,11 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
               onClick={() => window.location.reload()}
               className="bg-primary text-on-primary font-label-md text-label-md px-lg py-md rounded-lg active:scale-95 transition-all inline-flex items-center gap-sm hover:opacity-95 shadow-md"
             >
-              <span className="material-symbols-outlined text-[18px]">refresh</span>
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7v5h-5M4 17v-5h5M5.6 8a7 7 0 0111.6-2L20 9M4 15l2.8 3A7 7 0 0018.4 16" /></svg>
               Reload Page
             </button>
           </div>
-        </div>
+        </main>
       );
     }
 

@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma.js';
+import { currentOwner, privateResponse } from '../lib/session.js';
 
 export default async function handler(req, res) {
   // CORS
@@ -13,8 +14,13 @@ export default async function handler(req, res) {
   }
 
   try {
+    privateResponse(res);
+    const userId = await currentOwner(req);
+    if (!userId) return res.json([]);
     const analyses = await prisma.analysis.findMany({
+      where: { userId },
       orderBy: { createdAt: 'desc' },
+      take: 100,
     });
     return res.json(analyses);
   } catch (error) {

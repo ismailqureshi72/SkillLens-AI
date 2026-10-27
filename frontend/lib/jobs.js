@@ -1,4 +1,6 @@
-const MOCK_JOBS = [
+import { getRoleCategory, normalizeRole } from './roles.js';
+
+const SAMPLE_JOBS = [
   // Computer Science & Tech (8 Jobs)
   {
     id: 'job-1',
@@ -174,167 +176,42 @@ const MOCK_JOBS = [
   }
 ];
 
-function getRoleCategory(title) {
-  const t = title.toLowerCase();
 
-  if (t.includes('nurse') || t.includes('doctor') || t.includes('pharmacist') || t.includes('clinical') || t.includes('medical') || t.includes('surgeon') || t.includes('nutrition') || t.includes('diet') || t.includes('healthcare') || t.includes('dentist') || t.includes('hospital')) {
-    return 'Healthcare & Medical';
-  }
-  if (t.includes('finance') || t.includes('analyst') || t.includes('accountant') || t.includes('auditor') || t.includes('tax') || t.includes('banker') || t.includes('brand manager') || t.includes('marketing') || t.includes('sales') || t.includes('business')) {
-    return 'Finance & Business';
-  }
-  if (t.includes('teacher') || t.includes('professor') || t.includes('tutor') || t.includes('educat') || t.includes('academic') || t.includes('school') || t.includes('english')) {
-    return 'Education & Training';
-  }
-  if (t.includes('mechanical') || t.includes('civil') || t.includes('electrical') || t.includes('chemical') || t.includes('industrial') || t.includes('aerospace') || t.includes('environmental') || t.includes('engineering') || t.includes('cad')) {
-    if (!t.includes('software') && !t.includes('computer') && !t.includes('data') && !t.includes('network')) {
-      return 'Traditional Engineering';
-    }
-  }
-  if (t.includes('lawyer') || t.includes('paralegal') || t.includes('legal') || t.includes('compliance') || t.includes('contract')) {
-    return 'Legal';
-  }
-  if (t.includes('supply') || t.includes('logistics') || t.includes('inventory') || t.includes('support') || t.includes('operations') || t.includes('customer') || t.includes('hr ') || t.includes('human resources') || t.includes('writer') || t.includes('content') || t.includes('copywrite')) {
-    return 'Operations & Support';
-  }
-  if (t.includes('designer') || t.includes('design') || t.includes('graphic') || t.includes('creative') || t.includes('art') || t.includes('ui/') || t.includes('ux') || t.includes(' ui') || t.includes('ux ')) {
-    return 'Design & Creative';
-  }
-  if (
-    t.includes('developer') ||
-    t.includes('engineer') ||
-    t.includes('architect') ||
-    t.includes('programmer') ||
-    t.includes('sre') ||
-    t.includes('devops') ||
-    t.includes('cloud') ||
-    t.includes('data') ||
-    t.includes('scientist') ||
-    t.includes('machine learning') ||
-    t.includes('ai ') ||
-    t.includes('qa') ||
-    t.includes('blockchain') ||
-    t.includes('security') ||
-    t.includes('computer science') ||
-    t.includes('computer') ||
-    t.includes('computing') ||
-    t.includes('cs') ||
-    t.includes('it')
-  ) {
-    return 'Technology & Software';
-  }
-
-  return 'Other';
+function normalizeSkill(value) {
+  const skill = value.normalize('NFKC').toLowerCase().trim().replace(/\s+/g, ' ');
+  const aliases = { js: 'javascript', ts: 'typescript', 'node js': 'node.js', 'react.js': 'react', 'postgres': 'postgresql' };
+  return aliases[skill] || skill;
 }
 
-export function matchJobs(userSkills, targetRole, filters) {
-  const normalizedUserSkills = userSkills.map(s => s.toLowerCase().trim());
-
-  let jobs = MOCK_JOBS.map(job => {
-    const matchedSkills = [];
-    const missingSkills = [];
-
-    job.requiredSkills.forEach(reqSkill => {
-      const reqSkillLower = reqSkill.toLowerCase().trim();
-
-      const isMatched = normalizedUserSkills.some(userSkill =>
-        userSkill.includes(reqSkillLower) || reqSkillLower.includes(userSkill)
-      );
-
-      if (isMatched) {
-        matchedSkills.push(reqSkill);
-      } else {
-        missingSkills.push(reqSkill);
-      }
+export function matchJobs(userSkills, targetRole = '', filters = {}) {
+  const skills = [...new Set(userSkills.filter(s => typeof s === 'string' && s.trim()).map(normalizeSkill))];
+  let jobs = SAMPLE_JOBS.map(job => {
+    const matchedSkills = job.requiredSkills.filter(required => {
+      const req = normalizeSkill(required);
+      return skills.some(skill => (' ' + skill + ' ').includes(' ' + req + ' '));
     });
-
-    const totalRequired = job.requiredSkills.length;
-    const matchedCount = matchedSkills.length;
-
-    const matchPercentage = totalRequired > 0
-      ? Math.round((matchedCount / totalRequired) * 100)
-      : 0;
-
-    let matchLevel = 'Low';
-    if (matchPercentage >= 75) {
-      matchLevel = 'Strong';
-    } else if (matchPercentage >= 60) {
-      matchLevel = 'Good';
-    } else if (matchPercentage >= 40) {
-      matchLevel = 'Moderate';
-    }
-
-    return {
-      ...job,
-      matchedSkills,
-      missingSkills,
-      matchPercentage,
-      matchLevel
+    const missingSkills = job.requiredSkills.filter(skill => !matchedSkills.includes(skill));
+    const matchPercentage = Math.round(matchedSkills.length / job.requiredSkills.length * 100);
+    return { ...job, matchedSkills, missingSkills, matchPercentage,
+      matchLevel: matchPercentage >= 75 ? 'Strong' : matchPercentage >= 60 ? 'Good' : matchPercentage >= 40 ? 'Moderate' : 'Low',
+      isSample: true, source: 'SkillLens sample catalogue', postedAt: null,
     };
   });
-
-  // Filter by targetRole category if specified
-  if (targetRole && targetRole.trim() !== '') {
-    const targetCat = getRoleCategory(targetRole);
-
-    let categoryJobs = jobs.filter(j => getRoleCategory(j.title) === targetCat);
-
-    if (categoryJobs.length > 0) {
-      const targetTokens = targetRole.toLowerCase()
-        .replace(/[()[\].,\/#!$%\^&\*;:{}=\-_`~?]/g, ' ')
-        .split(/\s+/)
-        .filter(w => w.length > 2 && w !== 'engineer' && w !== 'developer' && w !== 'graduate' && w !== 'specialist' && w !== 'manager');
-
-      if (targetTokens.length > 0) {
-        const semanticJobs = categoryJobs.filter(j => {
-          const titleLower = j.title.toLowerCase();
-          const descLower = j.description.toLowerCase();
-
-          const hasKeywordMatch = targetTokens.some(tok => titleLower.includes(tok) || descLower.includes(tok));
-          return hasKeywordMatch || j.matchPercentage >= 40;
-        });
-
-        if (semanticJobs.length > 0) {
-          categoryJobs = semanticJobs;
-        }
-      }
-
-      jobs = categoryJobs;
-    }
+  if (targetRole.trim()) {
+    const category = getRoleCategory(targetRole);
+    if (category === 'Other') return [];
+    jobs = jobs.filter(job => getRoleCategory(job.title) === category);
+    const tokens = normalizeRole(targetRole).split(' ').filter(t => t.length > 2 && !['senior','junior','lead','engineer','developer','specialist','manager','graduate'].includes(t));
+    if (tokens.length) jobs = jobs.filter(job => tokens.some(t => normalizeRole(job.title).split(' ').includes(t)) || job.matchPercentage >= 40);
   }
-
-  // Apply Backend Filters if provided
-  if (filters) {
-    if (filters.location && filters.location !== 'All' && filters.location !== '') {
-      const locLower = filters.location.toLowerCase();
-      if (locLower === 'remote (pakistan)') {
-        jobs = jobs.filter(j => j.location.toLowerCase().includes('remote'));
-      } else {
-        jobs = jobs.filter(j => j.location.toLowerCase().includes(locLower));
-      }
-    }
-
-    if (filters.role && filters.role !== 'All' && filters.role !== '') {
-      jobs = jobs.filter(j => getRoleCategory(j.title) === filters.role);
-    }
-
-    if (filters.remote === true || filters.remote === 'true') {
-      jobs = jobs.filter(j => j.location.toLowerCase().includes('remote'));
-    }
-
-    if (filters.match_level && filters.match_level !== 'All' && filters.match_level !== '') {
-      const level = filters.match_level;
-      if (level === '75' || level === 'Strong') {
-        jobs = jobs.filter(j => j.matchPercentage >= 75);
-      } else if (level === '60' || level === 'Good') {
-        jobs = jobs.filter(j => j.matchPercentage >= 60);
-      } else if (level === '40' || level === 'Moderate') {
-        jobs = jobs.filter(j => j.matchPercentage >= 40);
-      } else if (level === 'under40' || level === 'Low') {
-        jobs = jobs.filter(j => j.matchPercentage < 40);
-      }
-    }
+  if (filters.location && filters.location !== 'All') {
+    const location = filters.location.toLowerCase();
+    jobs = jobs.filter(job => job.location.toLowerCase().includes(location === 'remote (pakistan)' ? 'remote' : location));
   }
-
-  return jobs.sort((a, b) => b.matchPercentage - a.matchPercentage);
+  if (filters.role && filters.role !== 'All') jobs = jobs.filter(job => getRoleCategory(job.title) === filters.role);
+  if (filters.remote === true || filters.remote === 'true') jobs = jobs.filter(job => /remote/i.test(job.location));
+  const minimum = { '75': 75, Strong: 75, '60': 60, Good: 60, '40': 40, Moderate: 40 }[filters.match_level];
+  if (minimum) jobs = jobs.filter(job => job.matchPercentage >= minimum);
+  if (['under40', 'Low'].includes(filters.match_level)) jobs = jobs.filter(job => job.matchPercentage < 40);
+  return jobs.sort((a,b) => b.matchPercentage - a.matchPercentage);
 }

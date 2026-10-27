@@ -36,9 +36,8 @@ export default function SupportPage() {
       setName('');
       setEmail('');
       setMessage('');
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'An error occurred while submitting. Please try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred while submitting. Please try again.');
     } finally {
       setLoading(false);
     }

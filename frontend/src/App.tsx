@@ -14,7 +14,6 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 import ApiDocsPage from './pages/ApiDocsPage';
 import SupportPage from './pages/SupportPage';
-import CustomCursor from './components/CustomCursor';
 
 // ScrollToTop helper to reset window scroll position on route change
 function ScrollToTop() {
@@ -33,7 +32,6 @@ function App() {
       <AppProvider>
         <Router>
           <ScrollToTop />
-          <CustomCursor />
           <div className="min-h-screen bg-surface text-on-surface flex flex-col antialiased transition-colors duration-200">
             {/* Global Navigation Header */}
             <Navbar />

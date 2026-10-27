@@ -30,14 +30,14 @@ export default function PrivacyPolicyPage() {
           <div className="font-body-md text-body-md text-on-surface-variant flex flex-col gap-md leading-relaxed">
             <h2 className="font-headline-sm text-headline-sm text-on-surface mt-sm">1. Data Collection & Processing</h2>
             <p>
-              SkillLens AI processes your uploaded resume file (`.pdf` or `.docx`) to isolate plain text and parse skills. 
+              SkillLens AI processes your uploaded resume file (`.pdf` or `.docx`) to isolate plain text and parse skills.
               This parsing takes place locally on our servers and passes temporary data to local or configured AI models for calibration.
             </p>
 
             <h2 className="font-headline-sm text-headline-sm text-on-surface mt-sm">2. Resume Handling</h2>
             <p>
-              Your uploaded resume documents are used **only** for the duration of the analysis. Once the skills are isolated, the 
-              uploaded files are immediately deleted from the server storage. The extracted text is saved to our local SQLite database 
+              Your uploaded resume documents are used **only** for the duration of the analysis. Once the skills are isolated, the
+              uploaded files are immediately deleted from the server storage. The extracted text is saved to our Neon Postgres database
               so you can view your history on the dashboard, but you can request data deletion at any time.
             </p>
 
@@ -51,8 +51,8 @@ export default function PrivacyPolicyPage() {
 
             <h2 className="font-headline-sm text-headline-sm text-on-surface mt-sm">4. Data Protection</h2>
             <p>
-              We implement industry-standard technical security practices to secure metadata stored in the history database. 
-              Session keys and JWT configurations are used to secure individual user spaces when logged in.
+              We implement industry-standard technical security practices to secure metadata stored in the history database.
+              New analyses belong to an anonymous browser session protected by an HttpOnly cookie. History is private to that session; clearing cookies or using another browser removes access. Existing unowned records are not publicly listed.
             </p>
           </div>
         </div>

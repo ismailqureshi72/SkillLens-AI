@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { COMPANY_DATASET } from '../data/companies';
 import CompanyCard from './CompanyCard';
 
@@ -11,16 +11,9 @@ export default function CompanySection({ selectedMarket }: CompanySectionProps) 
   const [levelFilter, setLevelFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
 
-  // Reset filters when the category changes to prevent stale filters returning empty arrays
-  useEffect(() => {
-    setRoleFilter('All');
-    setLevelFilter('All');
-    setTypeFilter('All');
-  }, [selectedMarket]);
-
   // Filter companies belonging to the selected market category
   const categoryCompanies = COMPANY_DATASET.filter(company => {
-    if (selectedMarket === 'All' || selectedMarket === 'Custom') return true;
+    if (selectedMarket === 'All') return true;
     return company.category === selectedMarket;
   });
 
@@ -37,7 +30,7 @@ export default function CompanySection({ selectedMarket }: CompanySectionProps) 
     return matchesRole && matchesLevel && matchesType;
   });
 
-  // Fresh Graduate Friendly Companies
+  // Example Graduate Pathways
   const freshersFriendlyCompanies = filteredCompanies.filter(c => c.freshers);
 
   return (
@@ -104,16 +97,16 @@ export default function CompanySection({ selectedMarket }: CompanySectionProps) 
       <div className="flex flex-col gap-md">
         <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm">
           <span className="material-symbols-outlined text-primary">business</span>
-          Top Hiring Companies in Pakistan
+          Example Company Directory
         </h3>
         
         {filteredCompanies.length === 0 ? (
           <div className="py-xl bg-surface-container-low border border-outline-variant/30 rounded-xl p-xl text-center flex flex-col items-center gap-md">
             <span className="material-symbols-outlined text-primary text-[48px]">search_off</span>
             <div>
-              <h4 className="font-headline-sm text-headline-sm text-on-surface font-semibold">No companies match your filters</h4>
+              <h4 className="font-headline-sm text-headline-sm text-on-surface font-semibold">No reference companies match your selection</h4>
               <p className="font-body-md text-body-md text-on-surface-variant mt-xs">
-                Try resetting or clearing your select inputs.
+                This reference directory may not cover your role. Try clearing the filters.
               </p>
             </div>
             <button
@@ -141,11 +134,11 @@ export default function CompanySection({ selectedMarket }: CompanySectionProps) 
         <div className="flex items-center gap-sm">
           <span className="material-symbols-outlined text-green-600 text-[28px]">school</span>
           <h3 className="font-headline-sm text-headline-sm text-on-surface">
-            Fresh Graduate Friendly Companies
+            Example Graduate Pathways
           </h3>
         </div>
         <p className="font-body-sm text-body-sm text-on-surface-variant mb-xs">
-          These companies explicitly offer Intern or Junior pathways with dedicated fresh graduate onboarding structures.
+          Reference examples only. Check each employer for current openings and eligibility.
         </p>
 
         {freshersFriendlyCompanies.length === 0 ? (

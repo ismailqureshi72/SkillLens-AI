@@ -15,14 +15,14 @@ export default function LandingPage() {
     }
   }, []);
 
-  const processFile = (file: File) => {
-    if (file && (file.type === "application/pdf" || file.name.endsWith('.docx') || file.name.endsWith('.pdf'))) {
+  const processFile = useCallback((file: File) => {
+    if (file && /\.(pdf|docx)$/i.test(file.name) && file.size <= 4 * 1024 * 1024) {
       // Direct user to workspace page with state containing the file
       navigate('/workspace', { state: { resumeFile: file } });
     } else {
-      alert("Please upload a valid PDF or DOCX file (max 5MB).");
+      alert("Please upload a valid PDF or DOCX file (max 4MB).");
     }
-  };
+  }, [navigate]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -32,7 +32,7 @@ export default function LandingPage() {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       processFile(e.dataTransfer.files[0]);
     }
-  }, [navigate]);
+  }, [processFile]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();

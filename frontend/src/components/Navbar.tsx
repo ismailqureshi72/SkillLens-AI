@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 
 const NAV_LINKS = [
   { to: '/', label: 'Overview', end: true },
@@ -17,7 +17,7 @@ export default function Navbar() {
 
   const handleUploadCVClick = () => {
     setAnalysisResult(null);
-    navigate('/');
+    navigate('/workspace');
     setMobileOpen(false);
   };
 
@@ -41,7 +41,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-gutter">
+        <nav className="hidden xl:flex items-center gap-gutter">
           {NAV_LINKS.map(link => (
             <NavLink
               key={link.to}
@@ -73,7 +73,7 @@ export default function Navbar() {
           {/* Quick Upload Action (Desktop) */}
           <button
             onClick={handleUploadCVClick}
-            className="hidden md:flex bg-primary text-on-primary font-label-md text-label-md px-md py-sm rounded-lg items-center gap-sm active:scale-95 duration-150 transition-all hover:bg-primary/95"
+            className="hidden xl:flex bg-primary text-on-primary font-label-md text-label-md px-md py-sm rounded-lg items-center gap-sm active:scale-95 duration-150 transition-all hover:bg-primary/95"
           >
             Upload CV
           </button>
@@ -81,7 +81,7 @@ export default function Navbar() {
           {/* Mobile Hamburger Button */}
           <button
             onClick={() => setMobileOpen(prev => !prev)}
-            className="md:hidden hover:bg-surface-container-highest/50 rounded-lg p-sm transition-colors flex items-center justify-center text-on-surface-variant hover:text-primary"
+            className="xl:hidden hover:bg-surface-container-highest/50 rounded-lg p-sm transition-colors flex items-center justify-center text-on-surface-variant hover:text-primary"
             aria-label="Toggle Menu"
           >
             <span className="material-symbols-outlined">
@@ -93,7 +93,7 @@ export default function Navbar() {
 
       {/* Mobile Drawer */}
       {mobileOpen && (
-        <div className="md:hidden bg-surface border-t border-outline-variant/30 shadow-lg animate-in">
+        <div className="xl:hidden bg-surface border-t border-outline-variant/30 shadow-lg animate-in">
           <nav className="flex flex-col px-margin-mobile py-md gap-xs">
             {NAV_LINKS.map(link => (
               <NavLink

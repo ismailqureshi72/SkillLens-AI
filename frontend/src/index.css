@@ -211,12 +211,12 @@ body {
   }
 }
 
-/* Hide default cursor globally on desktop pointer devices to enable complete custom cursor replacement */
-@media (hover: hover) and (pointer: fine) {
-  html, 
-  body, 
-  html * {
-    cursor: none !important;
-  }
-}
 
+html, body, #root { width: 100%; min-height: 100%; }
+body { margin: 0; min-width: 320px; }
+#root { min-height: 100dvh; }
+button, a, input, select, summary { touch-action: manipulation; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.app-error-screen { min-height: 100dvh; width: 100%; display: grid; place-items: center; padding: 24px 16px; box-sizing: border-box; }
+.app-error-card { width: 100%; max-width: 32rem; min-width: 0; padding: clamp(24px, 5vw, 40px); box-sizing: border-box; overflow-wrap: anywhere; }
+main, section, .grid > *, .flex > * { min-width: 0; }

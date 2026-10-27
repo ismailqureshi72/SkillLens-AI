@@ -1,16 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 import API_BASE_URL from '../config/api';
 import { ROLE_DATASET } from '../data/roles';
 import type { RoleEntry } from '../data/roles';
+import { readStringList, writeStorage } from '../utils/safe-storage';
 
 export default function WorkspacePage() {
   const { setAnalysisResult, setError } = useApp();
   const location = useLocation();
   const navigate = useNavigate();
-  const intervalRef = useRef<any>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
+  const navigationRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    requestRef.current?.abort();
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (navigationRef.current) clearTimeout(navigationRef.current);
+  }, []);
 
   // Retrieve state passed from landing page upload
   const initialFile = location.state?.resumeFile || null;
@@ -23,8 +31,7 @@ export default function WorkspacePage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
-    const saved = localStorage.getItem('recent_role_searches');
-    return saved ? JSON.parse(saved) : [];
+    return readStringList('recent_role_searches');
   });
   const [analyzing, setAnalyzing] = useState(false);
   const [progressStep, setProgressStep] = useState<number>(0); // 0: parsing, 1: isolating, 2: generating
@@ -88,7 +95,7 @@ export default function WorkspacePage() {
     setRecentSearches(prev => {
       const filtered = prev.filter(s => s !== roleName);
       const updated = [roleName, ...filtered].slice(0, 5);
-      localStorage.setItem('recent_role_searches', JSON.stringify(updated));
+      writeStorage('recent_role_searches', JSON.stringify(updated));
       return updated;
     });
   };
@@ -103,12 +110,16 @@ export default function WorkspacePage() {
   // Handle local file selection if user navigated directly
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const chosen = e.target.files[0];
+      if (!/\.(pdf|docx)$/i.test(chosen.name) || chosen.size > 4 * 1024 * 1024) { setLocalError('Choose a PDF or DOCX file smaller than 4 MB.'); return; }
+      setFile(chosen);
       setLocalError('');
     }
   };
 
   const handleRemoveFile = () => {
+    requestRef.current?.abort();
+    if (navigationRef.current) clearTimeout(navigationRef.current);
     setFile(null);
     setLocalError('');
     setError(null);
@@ -122,6 +133,10 @@ export default function WorkspacePage() {
 
   const triggerAnalysis = async () => {
     const finalRole = selectedRole || roleQuery.trim();
+    if (!isDemo && (!file || !/\.(pdf|docx)$/i.test(file.name) || file.size > 4 * 1024 * 1024)) {
+      setLocalError('Choose a PDF or DOCX file smaller than 4 MB.');
+      return;
+    }
 
     if (!finalRole) {
       alert("Please specify a target role first.");
@@ -129,6 +144,8 @@ export default function WorkspacePage() {
     }
 
     setAnalyzing(true);
+    setLocalError('');
+    requestRef.current = new AbortController();
     setProgressStep(0); // Start at parsing
 
     // Fake visual progress increments for a premium feel
@@ -141,9 +158,10 @@ export default function WorkspacePage() {
 
     try {
       let resultData;
-      if (isDemo || file?.name === 'resume_demo.pdf') {
+      if (isDemo) {
         // Mock API call for demo
         await new Promise(resolve => setTimeout(resolve, 4500));
+        if (requestRef.current?.signal.aborted) return;
         
         const rLower = finalRole.toLowerCase();
         
@@ -284,6 +302,7 @@ export default function WorkspacePage() {
 
         const response = await axios.post(`${API_BASE_URL}/api/analyze`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
+          signal: requestRef.current.signal,
         });
 
         // Backend returns stringified values from Prisma SQLite sometimes, so we parse them if necessary
@@ -305,33 +324,36 @@ export default function WorkspacePage() {
         intervalRef.current = null;
       }
       setProgressStep(3); // Complete
-      setAnalysisResult(resultData);
+      setAnalysisResult({ ...resultData, isDemo });
       
       // Delay navigation slightly so they see the completed state
-      setTimeout(() => {
+      navigationRef.current = setTimeout(() => {
         setAnalyzing(false);
         const search = resultData.id ? `?id=${resultData.id}` : '';
         navigate(`/results${search}`);
       }, 500);
 
-    } catch (err: any) {
-      console.error(err);
+    } catch (err) {
+      if (axios.isCancel(err)) return;
+      const responseError = axios.isAxiosError<{ error?: string }>(err) ? err.response : undefined;
+      const message = err instanceof Error ? err.message : '';
+
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
       setAnalyzing(false);
       let errMsg = "Failed to analyze resume. Please try again.";
-      if (err.response?.data?.error) {
-        errMsg = err.response.data.error;
-      } else if (err.message && err.message.toLowerCase().includes("timeout")) {
+      if (responseError?.data?.error) {
+        errMsg = responseError.data.error;
+      } else if (message.toLowerCase().includes("timeout")) {
         errMsg = "Request timed out. The AI took too long to analyze. Please try again with a slightly shorter file or try once more.";
-      } else if (err.message && err.message.toLowerCase().includes("network error")) {
+      } else if (message.toLowerCase().includes("network error")) {
         errMsg = "Network error. Please check your internet connection and ensure the backend service is running.";
-      } else if (err.response?.status === 504 || err.response?.status === 502) {
+      } else if (responseError?.status === 504 || responseError?.status === 502) {
         errMsg = "Gateway timeout or service temporarily unavailable. The AI server is busy. Please try again.";
-      } else if (err.message) {
-        errMsg = `Analysis failed: ${err.message}. Please try again.`;
+      } else if (message) {
+        errMsg = `Analysis failed: ${message}. Please try again.`;
       }
       setLocalError(errMsg);
       setError(errMsg);
@@ -532,7 +554,7 @@ export default function WorkspacePage() {
                             e.stopPropagation();
                             setRecentSearches(prev => {
                               const updated = prev.filter(r => r !== role);
-                              localStorage.setItem('recent_role_searches', JSON.stringify(updated));
+                              writeStorage('recent_role_searches', JSON.stringify(updated));
                               return updated;
                             });
                           }}
