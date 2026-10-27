@@ -41,11 +41,14 @@ export default function JobsPage() {
   const initialFilters = getFiltersFromUrl(location.search);
 
   // Filter states
-  const [draft, setDraft] = useState({ search: location.search, filters: initialFilters });
-  const tempFilters = draft.search === location.search ? draft.filters : initialFilters;
+  const [draft, setDraft] = useState({ navigationKey: location.key, filters: initialFilters });
+  if (draft.navigationKey !== location.key) {
+    setDraft({ navigationKey: location.key, filters: initialFilters });
+  }
+  const tempFilters = draft.navigationKey === location.key ? draft.filters : initialFilters;
   const setTempFilters = (update: JobFilters | ((previous: JobFilters) => JobFilters)) => setDraft(previous => {
-    const current = previous.search === location.search ? previous.filters : getFiltersFromUrl(location.search);
-    return { search: location.search, filters: typeof update === 'function' ? update(current) : update };
+    const current = previous.navigationKey === location.key ? previous.filters : getFiltersFromUrl(location.search);
+    return { navigationKey: location.key, filters: typeof update === 'function' ? update(current) : update };
   });
   
   // Instant search, search flag, & UI states
